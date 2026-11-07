@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>DNS – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="networking.html">← Networking</a>
+    <h1 class="page-title">DNS</h1>
+    <p class="page-sub">Humans use names, computers use numbers. Follow one lookup through the whole DNS system.</p>
+
+    <div class="sim">
+      <div class="sim-message" id="msg"></div>
+      <div id="flow"></div>
+      <div class="pkt-info" id="pktInfo"></div>
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="1-2"><b>1. Ask the resolver</b> – Your PC asks a resolver to do the work. The resolver checks its cache first.</li>
+        <li data-step="3-4"><b>2. Root server</b> – Root servers point the resolver to the right top-level domain servers.</li>
+        <li data-step="5-6"><b>3. TLD server</b> – The .com servers point to the name servers of the domain.</li>
+        <li data-step="7-8"><b>4. Authoritative server</b> – The authoritative server holds the real records and gives the final answer.</li>
+        <li data-step="9-10"><b>5. Cache and connect</b> – The answer is cached for its TTL, and your browser connects to the IP.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why it matters</h2>
+      <p><b>Common record types:</b> A (name to IPv4), AAAA (IPv6), CNAME (alias), MX (mail servers), NS (name servers), TXT (text, often used for SPF and verification).</p>
+      <p><b>Attacks:</b> <b>DNS spoofing / cache poisoning</b> puts a fake answer into a resolver so users reach the attacker's IP. <b>DNS tunnelling</b> hides data inside DNS queries. DNS amplification is used for DDoS.</p>
+      <p><b>Defences:</b> <b>DNSSEC</b> (digital signatures prove an answer is genuine, but do not encrypt it), <b>DNS over HTTPS/TLS</b> (encrypts queries), and DNS filtering. Hackers also use DNS in recon: enumerating subdomains is a first step in bug bounty hunting.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+/* a1learning – sequence-style flow simulation (actors + arrows between them) */
+
+function createFlow(cfg) {
+  var root = document.getElementById("flow");
+  var infoEl = document.getElementById("pktInfo");
+  var N = cfg.actors.length, ROW = window.innerWidth < 600 ? 66 : 52, idx = {};
+  cfg.actors.forEach(function (a, i) { idx[a.id] = i; });
+  function cx(i) { return (i + 0.5) / N * 100; }
+
+  var head = document.createElement("div");
+  head.className = "flow-actors";
+  var pills = {};
+  cfg.actors.forEach(function (a) {
+    var d = document.createElement("div");
+    d.className = "flow-actor";
+    d.innerHTML = '<div class="fa-icon">' + a.icon + '</div><div class="fa-name">' + a.name + '</div>' +
+      (a.sub ? '<div class="fa-sub">' + a.sub + '</div>' : '') + '<div class="pill fa-pill"></div>';
+    head.appendChild(d);
+    pills[a.id] = d.querySelector(".fa-pill");
+  });
+
+  var lanes = document.createElement("div");
+  lanes.className = "flow-lanes";
+  lanes.style.height = ((cfg.steps.length - 1) * ROW + 8) + "px";
+  root.appendChild(head);
+  root.appendChild(lanes);
+
+  function stateAt(i) {
+    var s = {};
+    cfg.actors.forEach(function (a) { s[a.id] = a.state || ""; });
+    for (var k = 1; k <= i; k++) {
+      var st = cfg.steps[k].st;
+      if (st) for (var key in st) s[key] = st[key];
+    }
+    return s;
+  }
+
+  function addLane(k, now) {
+    var st = cfg.steps[k];
+    if (!st.from) return;
+    var f = idx[st.from], t = idx[st.to];
+    var lane = document.createElement("div");
+    lane.className = "lane" + (now ? " now" : "");
+    lane.style.top = ((k - 1) * ROW) + "px";
+    lane.style.height = ROW + "px";
+    var num = '<span class="lane-num">' + k + '</span>';
+    if (f === t) {
+      var n = document.createElement("div");
+      n.className = "lane-note";
+      n.innerHTML = num + st.label;
+      if (f === 0) n.style.left = "1%";
+      else if (f === N - 1) n.style.right = "1%";
+      else { n.style.left = cx(f) + "%"; n.style.transform = "translateX(-50%)"; }
+      lane.appendChild(n);
+    } else {
+      var a = Math.min(f, t), b = Math.max(f, t);
+      var left = cx(a), width = cx(b) - cx(a);
+      var arrow = document.createElement("div");
+      arrow.className = "arrow " + (f < t ? "r" : "l");
+      arrow.style.left = left + "%";
+      arrow.style.top = (ROW - 10) + "px";
+      arrow.style.width = width + "%";
+      var lab = document.createElement("div");
+      lab.className = "alabel";
+      lab.style.left = left + "%";
+      lab.style.width = width + "%";
+      lab.innerHTML = num + st.label;
+      lane.appendChild(arrow);
+      lane.appendChild(lab);
+    }
+    lanes.appendChild(lane);
+  }
+
+  function render(i) {
+    lanes.innerHTML = "";
+    cfg.actors.forEach(function (a, k) {
+      var line = document.createElement("div");
+      line.className = "lifeline";
+      line.style.left = cx(k) + "%";
+      lanes.appendChild(line);
+    });
+    for (var k = 1; k <= i; k++) addLane(k, k === i);
+    var s = stateAt(i);
+    cfg.actors.forEach(function (a) {
+      var txt = s[a.id] || "";
+      pills[a.id].textContent = txt;
+      pills[a.id].classList.toggle("on", txt.indexOf("✓") > -1);
+    });
+    infoEl.textContent = cfg.steps[i].info || "";
+  }
+
+  createStepper({ steps: cfg.steps, onStep: function (i) { render(i); return 0; } });
+}
+
+createFlow({"actors":[{"id":"pc","icon":"💻","name":"Your PC"},{"id":"res","icon":"🧭","name":"Resolver","sub":"e.g. 8.8.8.8"},{"id":"root","icon":"🌍","name":"Root","sub":"."},{"id":"tld","icon":"🏢","name":"TLD","sub":".com"},{"id":"auth","icon":"📘","name":"Auth. server","sub":"example.com"}],"steps":[{"msg":"<strong>Start:</strong> You type <b>learn.example.com</b> in your browser. Computers connect using IP addresses, so your PC needs to find the IP first. Press <b>Next step</b>."},{"msg":"<strong>Step 1 – Ask the resolver:</strong> Your PC checks its own cache (empty) and asks its configured <b>DNS resolver</b> (often your ISP's or 8.8.8.8).","from":"pc","to":"res","label":"learn.example.com?","st":{"pc":"Waiting…"},"info":"Query · type A · name learn.example.com · UDP port 53"},{"msg":"<strong>Step 2 – Cache check:</strong> The resolver checks its cache. Nothing stored, so it starts at the top of the DNS tree: the root servers.","from":"res","to":"res","label":"Not in my cache"},{"msg":"<strong>Step 3 – Ask a root server:</strong> The resolver asks a root server. Root servers do not know the answer, but they know who runs each top-level domain.","from":"res","to":"root","label":"learn.example.com?"},{"msg":"<strong>Step 4 – Root refers:</strong> The root says \"I don't know, but ask the <b>.com</b> servers\", and gives their addresses.","from":"root","to":"res","label":"Ask the .com servers","info":"Referral · NS records for .com"},{"msg":"<strong>Step 5 – Ask the TLD server:</strong> The resolver asks a .com (top-level domain) server.","from":"res","to":"tld","label":"learn.example.com?"},{"msg":"<strong>Step 6 – TLD refers:</strong> The .com server knows which name servers handle example.com and sends the resolver there.","from":"tld","to":"res","label":"Ask example.com's server","info":"Referral · NS records for example.com"},{"msg":"<strong>Step 7 – Ask the authoritative server:</strong> This server holds the real records for example.com.","from":"res","to":"auth","label":"learn.example.com?"},{"msg":"<strong>Step 8 – The answer:</strong> The authoritative server replies with the <b>A record</b> (the IPv4 address) and a <b>TTL</b>, the time the answer may be cached.","from":"auth","to":"res","label":"A = 203.0.113.25","info":"Answer · A record · 203.0.113.25 · TTL 300 seconds"},{"msg":"<strong>Step 9 – Back to you:</strong> The resolver <b>caches</b> the answer for the TTL (so the next person asking is answered instantly) and returns it to your PC.","from":"res","to":"pc","label":"203.0.113.25","st":{"pc":"IP ✓ 203.0.113.25"}},{"msg":"<strong>Step 10 – Connect:</strong> Your browser now knows the IP address and opens a connection to it (TCP handshake, then HTTPS).","from":"pc","to":"pc","label":"Connects to 203.0.113.25"}]});
+initQuiz([{"q":"What does DNS do?","o":["Translates domain names into IP addresses","Assigns IP addresses to devices","Encrypts web pages","Finds MAC addresses"],"a":0,"e":"DNS is the internet's phone book."},{"q":"Which port does DNS normally use?","o":["53","80","443","25"],"a":0,"e":"DNS uses port 53, usually UDP (and TCP for large answers)."},{"q":"What is a DNS resolver?","o":["A server that looks up answers on behalf of your device","A website blocker","A type of router","The server that stores the website"],"a":0,"e":"It does the step-by-step lookup and caches results."},{"q":"What do root servers tell the resolver?","o":["Which servers handle the top-level domain, like .com","The final IP address of the website","The user's password","Nothing, they are offline"],"a":0,"e":"Root servers refer the resolver downward."},{"q":"What is an authoritative name server?","o":["The server that holds the real DNS records for a domain","The server that blocks bad sites","Your ISP's cache","A backup root server"],"a":0,"e":"It gives the final, official answer."},{"q":"Which record maps a name to an IPv4 address?","o":["A record","MX record","CNAME record","NS record"],"a":0,"e":"AAAA is the IPv6 equivalent."},{"q":"Which record tells where to send email for a domain?","o":["MX record","A record","TXT record","CNAME record"],"a":0,"e":"MX stands for Mail Exchanger."},{"q":"What is a CNAME record?","o":["An alias that points one name to another name","A mail server entry","An IPv6 address","A security certificate"],"a":0,"e":"For example, www can be an alias of the main domain."},{"q":"What is TTL in DNS?","o":["How long an answer may be cached","The number of hops to the server","The time a website takes to load","The total number of lookups"],"a":0,"e":"Time To Live tells resolvers how long to keep the answer."},{"q":"Why does DNS caching matter?","o":["Answers are faster and the DNS servers get fewer queries","It encrypts the queries","It hides your IP address","It blocks malware"],"a":0,"e":"A cached answer skips the whole lookup chain."},{"q":"What is DNS cache poisoning?","o":["Putting a fake record into a resolver's cache so users go to the wrong IP","Deleting every DNS record","Slowing down a server with many pings","Stealing a domain name from its registrar"],"a":0,"e":"Victims are sent to an attacker-controlled site even though they typed the right name."},{"q":"What does DNSSEC provide?","o":["Digital signatures to verify that answers are genuine","Encryption of DNS queries","Faster lookups","Protection from phishing emails"],"a":0,"e":"DNSSEC authenticates answers but does not hide them. DoH/DoT encrypt queries."},{"q":"Which technology encrypts DNS queries?","o":["DNS over HTTPS (DoH)","DNSSEC","DHCP snooping","ARP inspection"],"a":0,"e":"DoH wraps DNS queries inside HTTPS."}]);
+  </script>
+</body>
+</html>

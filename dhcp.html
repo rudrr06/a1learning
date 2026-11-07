@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>DHCP – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="networking.html">← Networking</a>
+    <h1 class="page-title">DHCP</h1>
+    <p class="page-sub">When you join Wi-Fi, you do not type an IP address. Watch how the network hands you one.</p>
+
+    <div class="sim">
+      <div class="sim-message" id="msg"></div>
+      <div id="flow"></div>
+      <div class="pkt-info" id="pktInfo"></div>
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="1"><b>1. DISCOVER</b> – The new device broadcasts to find a DHCP server. This is a broadcast because it has no IP yet.</li>
+        <li data-step="2"><b>2. OFFER</b> – The server offers an IP address plus mask, gateway, DNS server and lease time.</li>
+        <li data-step="3"><b>3. REQUEST</b> – The device accepts one offer.</li>
+        <li data-step="4"><b>4. ACK</b> – The server confirms and records the lease.</li>
+        <li data-step="5-6"><b>5. Use and renew</b> – The device configures itself and renews the lease before it expires.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why it matters</h2>
+      <p>Remember the four messages as <b>DORA</b>: Discover, Offer, Request, Acknowledge. DHCP uses UDP ports 67 (server) and 68 (client).</p>
+      <p><b>Attacks:</b> a <b>rogue DHCP server</b> can hand out a fake gateway or DNS server so traffic goes through the attacker. <b>DHCP starvation</b> floods the server with requests until the pool is empty.</p>
+      <p><b>Defences:</b> <b>DHCP snooping</b> on switches (only trusted ports may answer), limits on addresses per port, and using HTTPS/VPN anyway. If a device shows an address like 169.254.x.x, DHCP failed and it assigned itself one.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+/* a1learning – sequence-style flow simulation (actors + arrows between them) */
+
+function createFlow(cfg) {
+  var root = document.getElementById("flow");
+  var infoEl = document.getElementById("pktInfo");
+  var N = cfg.actors.length, ROW = window.innerWidth < 600 ? 66 : 52, idx = {};
+  cfg.actors.forEach(function (a, i) { idx[a.id] = i; });
+  function cx(i) { return (i + 0.5) / N * 100; }
+
+  var head = document.createElement("div");
+  head.className = "flow-actors";
+  var pills = {};
+  cfg.actors.forEach(function (a) {
+    var d = document.createElement("div");
+    d.className = "flow-actor";
+    d.innerHTML = '<div class="fa-icon">' + a.icon + '</div><div class="fa-name">' + a.name + '</div>' +
+      (a.sub ? '<div class="fa-sub">' + a.sub + '</div>' : '') + '<div class="pill fa-pill"></div>';
+    head.appendChild(d);
+    pills[a.id] = d.querySelector(".fa-pill");
+  });
+
+  var lanes = document.createElement("div");
+  lanes.className = "flow-lanes";
+  lanes.style.height = ((cfg.steps.length - 1) * ROW + 8) + "px";
+  root.appendChild(head);
+  root.appendChild(lanes);
+
+  function stateAt(i) {
+    var s = {};
+    cfg.actors.forEach(function (a) { s[a.id] = a.state || ""; });
+    for (var k = 1; k <= i; k++) {
+      var st = cfg.steps[k].st;
+      if (st) for (var key in st) s[key] = st[key];
+    }
+    return s;
+  }
+
+  function addLane(k, now) {
+    var st = cfg.steps[k];
+    if (!st.from) return;
+    var f = idx[st.from], t = idx[st.to];
+    var lane = document.createElement("div");
+    lane.className = "lane" + (now ? " now" : "");
+    lane.style.top = ((k - 1) * ROW) + "px";
+    lane.style.height = ROW + "px";
+    var num = '<span class="lane-num">' + k + '</span>';
+    if (f === t) {
+      var n = document.createElement("div");
+      n.className = "lane-note";
+      n.innerHTML = num + st.label;
+      if (f === 0) n.style.left = "1%";
+      else if (f === N - 1) n.style.right = "1%";
+      else { n.style.left = cx(f) + "%"; n.style.transform = "translateX(-50%)"; }
+      lane.appendChild(n);
+    } else {
+      var a = Math.min(f, t), b = Math.max(f, t);
+      var left = cx(a), width = cx(b) - cx(a);
+      var arrow = document.createElement("div");
+      arrow.className = "arrow " + (f < t ? "r" : "l");
+      arrow.style.left = left + "%";
+      arrow.style.top = (ROW - 10) + "px";
+      arrow.style.width = width + "%";
+      var lab = document.createElement("div");
+      lab.className = "alabel";
+      lab.style.left = left + "%";
+      lab.style.width = width + "%";
+      lab.innerHTML = num + st.label;
+      lane.appendChild(arrow);
+      lane.appendChild(lab);
+    }
+    lanes.appendChild(lane);
+  }
+
+  function render(i) {
+    lanes.innerHTML = "";
+    cfg.actors.forEach(function (a, k) {
+      var line = document.createElement("div");
+      line.className = "lifeline";
+      line.style.left = cx(k) + "%";
+      lanes.appendChild(line);
+    });
+    for (var k = 1; k <= i; k++) addLane(k, k === i);
+    var s = stateAt(i);
+    cfg.actors.forEach(function (a) {
+      var txt = s[a.id] || "";
+      pills[a.id].textContent = txt;
+      pills[a.id].classList.toggle("on", txt.indexOf("✓") > -1);
+    });
+    infoEl.textContent = cfg.steps[i].info || "";
+  }
+
+  createStepper({ steps: cfg.steps, onStep: function (i) { render(i); return 0; } });
+}
+
+createFlow({"actors":[{"id":"c","icon":"💻","name":"New device","state":"IP: none"},{"id":"s","icon":"📡","name":"Router","sub":"DHCP server 192.168.1.1"}],"steps":[{"msg":"<strong>Start:</strong> Your phone just joined the Wi-Fi. It has <b>no IP address</b> yet, so it cannot talk to anyone normally. It needs the network to configure it. Press <b>Next step</b>."},{"msg":"<strong>Step 1 – DISCOVER:</strong> The device shouts to everyone on the local network: \"Is there a DHCP server?\" It uses a <b>broadcast</b> because it has no address and does not know the server.","from":"c","to":"s","label":"DISCOVER (broadcast)","info":"src 0.0.0.0:68 → dst 255.255.255.255:67 · \"any DHCP server out there?\""},{"msg":"<strong>Step 2 – OFFER:</strong> The server picks a free address from its pool and offers it, with the other settings the device will need.","from":"s","to":"c","label":"OFFER 192.168.1.50","info":"IP 192.168.1.50 · mask 255.255.255.0 · gateway 192.168.1.1 · DNS 8.8.8.8 · lease 24 h"},{"msg":"<strong>Step 3 – REQUEST:</strong> The device says \"Yes, I will take 192.168.1.50.\" It is still a broadcast, so any other DHCP server knows its offer was not chosen.","from":"c","to":"s","label":"REQUEST 192.168.1.50","info":"Client accepts the offer from 192.168.1.1"},{"msg":"<strong>Step 4 – ACK:</strong> The server confirms and records the lease. The address is now officially yours for the lease time.","from":"s","to":"c","label":"ACK ✓","st":{"c":"IP ✓ 192.168.1.50"},"info":"Lease granted: 24 hours"},{"msg":"<strong>Step 5 – Configured:</strong> The device applies the settings: <b>IP address</b>, <b>subnet mask</b>, <b>default gateway</b> (the router) and <b>DNS server</b>. Now it can browse the internet.","from":"c","to":"c","label":"Applies IP, mask, gateway, DNS"},{"msg":"<strong>Step 6 – Renewal:</strong> Halfway through the lease, the device quietly asks the server to renew so it keeps the same address. If it leaves the network, the address returns to the pool.","from":"c","to":"c","label":"At 50% of lease: renew"}]});
+initQuiz([{"q":"What does DHCP do?","o":["Automatically gives devices an IP address and network settings","Translates domain names to IPs","Encrypts web traffic","Maps IPs to MAC addresses"],"a":0,"e":"DHCP removes the need to configure every device by hand."},{"q":"What is the correct order of DHCP messages?","o":["Discover, Offer, Request, Acknowledge","Request, Offer, Discover, Acknowledge","Offer, Discover, Acknowledge, Request","Discover, Request, Offer, Acknowledge"],"a":0,"e":"Remember DORA."},{"q":"Why is the DISCOVER message a broadcast?","o":["The client has no IP and does not know where the server is","Broadcasts are encrypted","DHCP servers only listen to broadcasts for security","To save bandwidth"],"a":0,"e":"Broadcasting reaches every device on the local network, including any DHCP server."},{"q":"Besides the IP address, what else does DHCP usually provide?","o":["Subnet mask, default gateway and DNS servers","The Wi-Fi password","The device MAC address","A web browser"],"a":0,"e":"These settings are everything a device needs to use the network."},{"q":"What is a DHCP lease?","o":["The time a device may keep its assigned address","A paid contract with an ISP","A type of DHCP attack","A backup of the router"],"a":0,"e":"After the lease expires the address can be given to another device unless it is renewed."},{"q":"Which transport protocol does DHCP use?","o":["UDP","TCP","ICMP","None, it works directly over Ethernet"],"a":0,"e":"DHCP uses UDP ports 67 and 68."},{"q":"What is a rogue DHCP server attack?","o":["An attacker answers DHCP requests with a fake gateway or DNS","An attacker steals the router","An attacker removes the lease","An attacker deletes the DHCP pool"],"a":0,"e":"Victims then send traffic through the attacker, enabling man-in-the-middle attacks."},{"q":"What is DHCP starvation?","o":["Flooding the server with requests so it runs out of addresses","A device that never gets an offer by accident","Turning off the DHCP server","Sending DHCP over the internet"],"a":0,"e":"Once the pool is empty, real users cannot get an IP."},{"q":"Which switch feature helps against rogue DHCP servers?","o":["DHCP snooping","Port mirroring","Spanning tree","VLAN trunking"],"a":0,"e":"DHCP snooping only allows DHCP replies from trusted ports."},{"q":"A computer shows the IP address 169.254.10.20. What happened?","o":["It could not reach a DHCP server and gave itself an address","It got a public address","It is using IPv6","The router is working perfectly"],"a":0,"e":"169.254.x.x is the automatic private (link-local) range."},{"q":"Why do servers and printers often use fixed (static) addresses or DHCP reservations?","o":["So other devices can always find them at the same address","They cannot use DHCP","To make them faster","DHCP is not secure for servers"],"a":0,"e":"A stable address makes them easy to reach."}]);
+  </script>
+</body>
+</html>

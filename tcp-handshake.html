@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>TCP Three-Way Handshake – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="networking.html">← Networking</a>
+    <h1 class="page-title">TCP Three-Way Handshake</h1>
+    <p class="page-sub">Before two computers send data, they agree to connect. Press <b>Next step</b> and watch it happen.</p>
+
+    <!-- SIMULATION -->
+    <div class="sim">
+      <div class="sim-stage">
+        <div class="device">
+          <div class="name">💻 Client</div>
+          <div class="pill" id="clientState">CLOSED</div>
+        </div>
+        <div class="track" id="track">
+          <div class="packet" id="packet">SYN</div>
+        </div>
+        <div class="device">
+          <div class="name">🖥️ Server</div>
+          <div class="pill" id="serverState">LISTEN</div>
+        </div>
+      </div>
+
+      <div class="pkt-info" id="pktInfo">No packet sent yet</div>
+      <div class="sim-message" id="msg"></div>
+
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <!-- EXPLANATION -->
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="1"><b>1. SYN</b> – "I want to connect." The client sends a random starting number <code>x</code>. The sequence number is a counter that keeps data in order and spots lost pieces.</li>
+        <li data-step="2"><b>2. SYN-ACK</b> – "Got it, and I'm ready too." The server confirms <code>x</code> (by sending <code>x + 1</code>) and sends its own number <code>y</code>. Once this arrives, the client knows the server is reachable.</li>
+        <li data-step="3"><b>3. ACK</b> – "Got yours too." The client confirms <code>y</code> (by sending <code>y + 1</code>). Only now does the <i>server</i> know the client can hear it, so the server becomes ESTABLISHED.</li>
+        <li data-step="4"><b>4. Data flows</b> – Both sides are ESTABLISHED, so real data (a web page, a message) can now be sent in both directions.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why does security care?</h2>
+      <p><b>SYN flood:</b> an attacker sends thousands of SYN packets and never sends the final ACK. The server keeps every half-open connection waiting until it runs out of room and real users cannot connect. Defenses include <b>SYN cookies</b> and rate limiting.</p>
+      <p><b>Port scanning:</b> tools like Nmap send a SYN and watch the reply. A SYN-ACK means the port is open; a reset (RST) means it is closed.</p>
+    </div>
+
+    <!-- OPTIONAL MCQ PRACTICE -->
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+</script>
+  <script>
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+</script>
+  <script>
+    var clientEl = document.getElementById("clientState");
+    var serverEl = document.getElementById("serverState");
+    var packet = document.getElementById("packet");
+    var track = document.getElementById("track");
+    var info = document.getElementById("pktInfo");
+
+    function setStates(c, s) {
+      clientEl.textContent = c;
+      serverEl.textContent = s;
+      clientEl.classList.toggle("on", c === "ESTABLISHED");
+      serverEl.classList.toggle("on", s === "ESTABLISHED");
+    }
+
+    var S = [
+      {
+        msg: "<strong>Start:</strong> The server is waiting for connections (<b>LISTEN</b>). The client wants to connect but has not sent anything yet. Press <b>Next step</b>.",
+        c1: "CLOSED", s1: "LISTEN", info: "No packet sent yet"
+      },
+      {
+        msg: "<strong>Step 1 – SYN:</strong> The client sends a SYN (\"synchronize\") packet with a random starting number <b>x</b> and waits (<b>SYN-SENT</b>). When it arrives, the server moves to <b>SYN-RECEIVED</b>.",
+        label: "SYN", dir: "right",
+        c0: "SYN-SENT", s0: "LISTEN", c1: "SYN-SENT", s1: "SYN-RECEIVED",
+        info: "SYN = 1  ·  ACK = 0  ·  seq = x"
+      },
+      {
+        msg: "<strong>Step 2 – SYN-ACK:</strong> The server replies with its own number <b>y</b> and confirms the client's (ack = x + 1). When it arrives, the client becomes <b>ESTABLISHED</b>.",
+        label: "SYN-ACK", dir: "left",
+        c0: "SYN-SENT", s0: "SYN-RECEIVED", c1: "ESTABLISHED", s1: "SYN-RECEIVED",
+        info: "SYN = 1  ·  ACK = 1  ·  seq = y  ·  ack = x + 1"
+      },
+      {
+        msg: "<strong>Step 3 – ACK:</strong> The client confirms the server's number (ack = y + 1). When it arrives, the server is <b>ESTABLISHED</b> too. This last packet is what tells the server the client really got its reply.",
+        label: "ACK", dir: "right",
+        c0: "ESTABLISHED", s0: "SYN-RECEIVED", c1: "ESTABLISHED", s1: "ESTABLISHED",
+        info: "SYN = 0  ·  ACK = 1  ·  seq = x + 1  ·  ack = y + 1"
+      },
+      {
+        msg: "<strong>Step 4 – Data:</strong> The connection is ready. Normal data can now flow in both directions.",
+        label: "DATA", dir: "right",
+        c0: "ESTABLISHED", s0: "ESTABLISHED", c1: "ESTABLISHED", s1: "ESTABLISHED",
+        info: "ACK = 1  ·  payload = your actual data"
+      }
+    ];
+
+    createStepper({
+      steps: S,
+      onStep: function (i, prev) {
+        var st = S[i];
+        info.textContent = st.info;
+        if (i === 0 || i <= prev) {
+          setStates(st.c1, st.s1);
+          packet.style.opacity = 0;
+          return 0;
+        }
+        setStates(st.c0, st.s0);
+        flyPacket(packet, track, st.label, st.dir, 1000);
+        setTimeout(function () { setStates(st.c1, st.s1); }, 1000);
+        return 1100;
+      }
+    });
+
+    initQuiz([
+      { q: "What is the correct order of the three-way handshake?", o: ["SYN → ACK → SYN-ACK", "SYN → SYN-ACK → ACK", "ACK → SYN → SYN-ACK", "SYN-ACK → SYN → ACK"], a: 1, e: "The client sends SYN, the server replies SYN-ACK, and the client finishes with ACK." },
+      { q: "Which side sends the SYN-ACK packet?", o: ["The client", "The server", "A router in between", "The DNS server"], a: 1, e: "The server answers the client's SYN with a SYN-ACK." },
+      { q: "What does SYN stand for?", o: ["Synchronize", "Synthesize", "Secure Network", "Send Now"], a: 0, e: "SYN means synchronize: both sides synchronize their starting sequence numbers." },
+      { q: "How many packets make up the handshake?", o: ["2", "3", "4", "5"], a: 1, e: "SYN, SYN-ACK and ACK: three packets." },
+      { q: "Which state is a server in while it waits for incoming connections?", o: ["CLOSED", "LISTEN", "ESTABLISHED", "SYN-SENT"], a: 1, e: "A server waiting for clients is in the LISTEN state." },
+      { q: "Which state is the client in right after it sends its SYN?", o: ["LISTEN", "SYN-RECEIVED", "SYN-SENT", "ESTABLISHED"], a: 2, e: "After sending SYN, the client waits in SYN-SENT." },
+      { q: "The client's SYN has sequence number x. What acknowledgment number does the server put in its SYN-ACK?", o: ["x", "x + 1", "x − 1", "y"], a: 1, e: "The server acknowledges the next number it expects, so ack = x + 1." },
+      { q: "Why is the final ACK needed?", o: ["It encrypts the connection", "It confirms the client received the server's SYN-ACK, so both sides know the other can hear them", "It carries the actual web page", "It closes the connection"], a: 1, e: "Without the final ACK the server could not be sure the client received its SYN-ACK." },
+      { q: "In a SYN flood attack, what does the attacker avoid sending?", o: ["The first SYN", "The final ACK", "The SYN-ACK", "Any packets at all"], a: 1, e: "Without the final ACK, the server keeps half-open connections waiting until its resources run out." },
+      { q: "Which technique helps servers survive a SYN flood?", o: ["SYN cookies", "Larger fonts", "Turning off TCP", "Using HTTP instead of HTTPS"], a: 0, e: "SYN cookies let the server avoid storing state for half-open connections until the final ACK arrives." },
+      { q: "Which protocol does NOT do a handshake before sending data?", o: ["TCP", "UDP", "Both do", "Neither does"], a: 1, e: "UDP is connectionless: it just sends packets without setting up a connection first." },
+      { q: "A port scanner sends a SYN and receives a SYN-ACK. What does this usually mean?", o: ["The port is open", "The port is closed", "The host is offline", "The firewall encrypted the traffic"], a: 0, e: "A SYN-ACK means something is listening on that port. A closed port normally replies with RST." }
+    ]);
+  </script>
+</body>
+</html>

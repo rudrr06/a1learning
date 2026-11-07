@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>The OSI Model – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="networking.html">← Networking</a>
+    <h1 class="page-title">The OSI Model</h1>
+    <p class="page-sub">Follow a message from your keyboard to your friend's screen. Each layer wraps the data with its own information.</p>
+
+    <div class="sim">
+      <div class="sim-message" id="msg"></div>
+      <div class="osi-wrap">
+  <div><div class="code-label">SENDER (YOU)</div><div class="osi-stack" id="sStack"></div></div>
+  <div><div class="code-label">RECEIVER (FRIEND)</div><div class="osi-stack" id="rStack"></div></div>
+</div>
+<div class="code-label" style="margin-top:16px">THE DATA RIGHT NOW: <b id="pdu"></b></div>
+<div class="chips" id="chips"></div>
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="1"><b>7. Application</b> – The layer apps use to talk to the network (HTTP, DNS, SMTP). Your message is created here.</li>
+        <li data-step="2"><b>6. Presentation</b> – Formats, compresses and encrypts the data so both sides understand it.</li>
+        <li data-step="3"><b>5. Session</b> – Opens, manages and closes the conversation between the two computers.</li>
+        <li data-step="4"><b>4. Transport</b> – Splits data into <b>segments</b>, adds <b>port numbers</b>, and (with TCP) makes delivery reliable.</li>
+        <li data-step="5"><b>3. Network</b> – Adds <b>IP addresses</b> and chooses the route across networks. The unit is a <b>packet</b>.</li>
+        <li data-step="6"><b>2. Data Link</b> – Adds <b>MAC addresses</b> for the next hop on the local link. The unit is a <b>frame</b>.</li>
+        <li data-step="7"><b>1. Physical</b> – Sends raw <b>bits</b> as electrical, light or radio signals.</li>
+        <li data-step="8-10"><b>Receiver unwraps</b> – The receiver goes bottom to top and removes each layer's header (<b>decapsulation</b>) until only your message is left.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why it matters</h2>
+      <p>The OSI model is a shared language: when someone says "a layer 2 problem" or "a layer 7 attack", you instantly know where to look.</p>
+      <p><b>Security link:</b> attacks and defences map to layers. ARP spoofing is layer 2, IP spoofing and routing attacks are layer 3, SYN floods are layer 4, SQL injection and phishing are layer 7. Firewalls, switches and routers each work at different layers.</p>
+      <p><b>Memory trick (top to bottom):</b> <i>All People Seem To Need Data Processing</i>: Application, Presentation, Session, Transport, Network, Data Link, Physical. The real internet uses the simpler 4-layer TCP/IP model, but OSI is the standard way to learn and talk about it.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+var L = [
+  [7, "Application", "HTTP, DNS, SMTP"],
+  [6, "Presentation", "Encoding, encryption"],
+  [5, "Session", "Keeps the conversation"],
+  [4, "Transport", "TCP / UDP, ports"],
+  [3, "Network", "IP addresses, routers"],
+  [2, "Data Link", "MAC addresses, switches"],
+  [1, "Physical", "Cables, Wi-Fi, bits"]
+];
+
+function stackHTML(p) {
+  return L.map(function (l) {
+    return '<div class="osi-row" id="' + p + l[0] + '"><b>' + l[0] + '</b><span>' + l[1] + '</span><small>' + l[2] + '</small></div>';
+  }).join("");
+}
+document.getElementById("sStack").innerHTML = stackHTML("s");
+document.getElementById("rStack").innerHTML = stackHTML("r");
+
+var chipsEl = document.getElementById("chips");
+var pduEl = document.getElementById("pdu");
+
+function chip(t, c) { return '<span class="chip ' + c + '">' + t + '</span>'; }
+
+var S = [
+  { msg: "<strong>Start:</strong> You send the message <b>\"Hello!\"</b> to a friend. Before it travels, it goes <b>down</b> through 7 layers on your side (each adds its own information), crosses the wire, then goes <b>up</b> the 7 layers on your friend's side. Press <b>Next step</b>.", pdu: "Your message" },
+  { msg: "<strong>Layer 7 – Application:</strong> Your app (browser, chat app) creates the data using a protocol such as HTTP. This is the layer you actually interact with.", pdu: "Data" },
+  { msg: "<strong>Layer 6 – Presentation:</strong> The data is put into a common format and can be compressed or encrypted (🔒), so both sides understand it.", pdu: "Data" },
+  { msg: "<strong>Layer 5 – Session:</strong> A session (conversation) between the two computers is opened, managed and later closed.", pdu: "Data" },
+  { msg: "<strong>Layer 4 – Transport:</strong> The data is split into pieces and a <b>TCP header</b> is added with <b>port numbers</b> (which app) and sequence numbers (order). The unit is now called a <b>segment</b>.", pdu: "Segment" },
+  { msg: "<strong>Layer 3 – Network:</strong> An <b>IP header</b> with the sender and receiver <b>IP addresses</b> is added. Routers use this to move it across networks. The unit is now a <b>packet</b>.", pdu: "Packet" },
+  { msg: "<strong>Layer 2 – Data Link:</strong> A header with <b>MAC addresses</b> (next device on this local link) and a trailer for error checking are added. The unit is now a <b>frame</b>.", pdu: "Frame" },
+  { msg: "<strong>Layer 1 – Physical:</strong> The frame becomes <b>bits</b>: electrical signals in a cable, light in fibre, or radio waves in Wi-Fi. It crosses the wire to your friend.", pdu: "Bits" },
+  { msg: "<strong>Receiver, layers 1–2:</strong> The signal is read as bits, rebuilt into a frame, the MAC address is checked, and the Ethernet header and trailer are <b>removed</b>.", pdu: "Packet" },
+  { msg: "<strong>Receiver, layers 3–4:</strong> The IP header is checked and removed, then the TCP header is used to put pieces in order and pick the right port, then removed too.", pdu: "Data" },
+  { msg: "<strong>Receiver, layers 5–7:</strong> The session is matched, the data is decrypted/decoded, and the app shows <b>\"Hello!\"</b>. Each layer only talked to its twin on the other side.", pdu: "Delivered" }
+];
+
+function chipsFor(i) {
+  var d = (i >= 2 && i <= 9) ? "🔒 Hello!" : "Hello!";
+  var c = [];
+  if (i === 7) return chip("1 0 1 1 0 0 1 0 1 1 0 …", "bits");
+  if (i >= 6 && i <= 6) c.push(chip("Eth hdr (MAC)", "l2"));
+  if (i >= 5 && i <= 6 || i === 8) c.push(chip("IP hdr", "l3"));
+  if (i >= 4 && i <= 6 || i === 8) c.push(chip("TCP hdr (ports)", "l4"));
+  c.push(chip(d, "d"));
+  if (i === 6) c.push(chip("Trailer", "l2"));
+  return c.join("");
+}
+
+function rowState(side, l, i) {
+  if (side === "s") {
+    if (i >= 8) return "done";
+    if (i >= 1) {
+      var cur = 8 - i;
+      if (l > cur) return "done";
+      if (l === cur) return "active";
+    }
+    return "";
+  }
+  if (i === 8) return l <= 2 ? "active" : "";
+  if (i === 9) return l <= 2 ? "done" : (l <= 4 ? "active" : "");
+  if (i === 10) return l <= 4 ? "done" : "active";
+  return "";
+}
+
+createStepper({
+  steps: S,
+  onStep: function (i) {
+    for (var l = 1; l <= 7; l++) {
+      document.getElementById("s" + l).className = "osi-row " + rowState("s", l, i);
+      document.getElementById("r" + l).className = "osi-row " + rowState("r", l, i);
+    }
+    pduEl.textContent = S[i].pdu;
+    chipsEl.innerHTML = chipsFor(i);
+    return 0;
+  }
+});
+
+initQuiz([{"q":"How many layers does the OSI model have?","o":["7","4","5","6"],"a":0,"e":"The OSI model has 7 layers, from Physical (1) to Application (7)."},{"q":"Which layer deals with IP addresses and routing?","o":["Network (layer 3)","Transport (layer 4)","Data Link (layer 2)","Session (layer 5)"],"a":0,"e":"The Network layer adds IP addresses and routers use them to move packets between networks."},{"q":"Which layer uses MAC addresses and switches?","o":["Data Link (layer 2)","Network (layer 3)","Physical (layer 1)","Application (layer 7)"],"a":0,"e":"Switches forward frames using MAC addresses at layer 2."},{"q":"TCP and UDP work at which layer?","o":["Transport (layer 4)","Network (layer 3)","Session (layer 5)","Application (layer 7)"],"a":0,"e":"TCP and UDP are transport protocols and use port numbers."},{"q":"What is the data unit at the Transport layer (TCP) called?","o":["Segment","Packet","Frame","Bit"],"a":0,"e":"Transport = segment, Network = packet, Data Link = frame, Physical = bits."},{"q":"What is the data unit at the Data Link layer called?","o":["Frame","Segment","Packet","Datagram of bits"],"a":0,"e":"Layer 2 data units are frames."},{"q":"What is encapsulation?","o":["Each layer adds its own header (and sometimes trailer) as data moves down the stack","Encrypting data with a key","Compressing a file","Deleting old packets"],"a":0,"e":"Going down, each layer wraps the data with its own information. Going up, each layer removes it."},{"q":"Which layer is closest to the user and their apps?","o":["Application (layer 7)","Physical (layer 1)","Transport (layer 4)","Network (layer 3)"],"a":0,"e":"Layer 7 is where protocols like HTTP and DNS live, closest to the user."},{"q":"A network cable is unplugged. Which layer has the problem?","o":["Physical (layer 1)","Network (layer 3)","Session (layer 5)","Application (layer 7)"],"a":0,"e":"Cables, connectors and signals are layer 1."},{"q":"Which layer is responsible for encoding, compression and encryption of data?","o":["Presentation (layer 6)","Session (layer 5)","Transport (layer 4)","Data Link (layer 2)"],"a":0,"e":"The Presentation layer translates data formats and can compress or encrypt them."},{"q":"A router mainly works at which layer?","o":["Network (layer 3)","Data Link (layer 2)","Physical (layer 1)","Application (layer 7)"],"a":0,"e":"Routers read IP addresses, which are layer 3."},{"q":"When data arrives at the receiver, in which direction does it move through the layers?","o":["Bottom to top (Physical up to Application)","Top to bottom","Only layers 3 and 4 are used","Randomly"],"a":0,"e":"The receiver reverses the process: layer 1 first, layer 7 last."},{"q":"Which attack mainly targets layer 7?","o":["SQL injection","Cable tapping","MAC flooding","Bit rot"],"a":0,"e":"SQL injection abuses the application. MAC flooding is layer 2, and cable tapping is layer 1."}]);
+  </script>
+</body>
+</html>

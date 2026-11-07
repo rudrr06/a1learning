@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>HTTPS & the TLS Handshake – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="networking.html">← Networking</a>
+    <h1 class="page-title">HTTPS & the TLS Handshake</h1>
+    <p class="page-sub">The padlock in your browser is the result of this handshake. (Simplified, based on TLS 1.3.)</p>
+
+    <div class="sim">
+      <div class="sim-message" id="msg"></div>
+      <div id="flow"></div>
+      <div class="pkt-info" id="pktInfo"></div>
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="1"><b>1. ClientHello</b> – The browser offers its capabilities.</li>
+        <li data-step="2"><b>2. ServerHello + certificate</b> – The server chooses settings and proves its identity.</li>
+        <li data-step="3"><b>3. Verify</b> – The browser validates the certificate chain.</li>
+        <li data-step="4-5"><b>4. Shared key</b> – Both sides compute the same secret session key.</li>
+        <li data-step="6-9"><b>5. Encrypted data</b> – HTTP is now protected from eavesdropping and tampering.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why it matters</h2>
+      <p><b>What TLS gives you:</b> <b>confidentiality</b> (encryption), <b>integrity</b> (data cannot be changed unnoticed) and <b>authentication</b> (you are talking to the real domain). Asymmetric cryptography and certificates establish trust and the key, then fast symmetric encryption protects the data.</p>
+      <p><b>Forward secrecy:</b> modern TLS uses temporary keys for each session, so recording traffic today and stealing the server's private key later does not reveal old conversations.</p>
+      <p><b>Security link:</b> the padlock means the connection is encrypted to that domain, <b>not</b> that the site is trustworthy: phishing sites have padlocks too. A man-in-the-middle cannot silently read HTTPS because they cannot present a valid certificate for the domain, which is why certificate warnings must never be ignored. Old protocols (SSL, TLS 1.0 and 1.1) are broken and should be disabled.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+/* a1learning – sequence-style flow simulation (actors + arrows between them) */
+
+function createFlow(cfg) {
+  var root = document.getElementById("flow");
+  var infoEl = document.getElementById("pktInfo");
+  var N = cfg.actors.length, ROW = window.innerWidth < 600 ? 66 : 52, idx = {};
+  cfg.actors.forEach(function (a, i) { idx[a.id] = i; });
+  function cx(i) { return (i + 0.5) / N * 100; }
+
+  var head = document.createElement("div");
+  head.className = "flow-actors";
+  var pills = {};
+  cfg.actors.forEach(function (a) {
+    var d = document.createElement("div");
+    d.className = "flow-actor";
+    d.innerHTML = '<div class="fa-icon">' + a.icon + '</div><div class="fa-name">' + a.name + '</div>' +
+      (a.sub ? '<div class="fa-sub">' + a.sub + '</div>' : '') + '<div class="pill fa-pill"></div>';
+    head.appendChild(d);
+    pills[a.id] = d.querySelector(".fa-pill");
+  });
+
+  var lanes = document.createElement("div");
+  lanes.className = "flow-lanes";
+  lanes.style.height = ((cfg.steps.length - 1) * ROW + 8) + "px";
+  root.appendChild(head);
+  root.appendChild(lanes);
+
+  function stateAt(i) {
+    var s = {};
+    cfg.actors.forEach(function (a) { s[a.id] = a.state || ""; });
+    for (var k = 1; k <= i; k++) {
+      var st = cfg.steps[k].st;
+      if (st) for (var key in st) s[key] = st[key];
+    }
+    return s;
+  }
+
+  function addLane(k, now) {
+    var st = cfg.steps[k];
+    if (!st.from) return;
+    var f = idx[st.from], t = idx[st.to];
+    var lane = document.createElement("div");
+    lane.className = "lane" + (now ? " now" : "");
+    lane.style.top = ((k - 1) * ROW) + "px";
+    lane.style.height = ROW + "px";
+    var num = '<span class="lane-num">' + k + '</span>';
+    if (f === t) {
+      var n = document.createElement("div");
+      n.className = "lane-note";
+      n.innerHTML = num + st.label;
+      if (f === 0) n.style.left = "1%";
+      else if (f === N - 1) n.style.right = "1%";
+      else { n.style.left = cx(f) + "%"; n.style.transform = "translateX(-50%)"; }
+      lane.appendChild(n);
+    } else {
+      var a = Math.min(f, t), b = Math.max(f, t);
+      var left = cx(a), width = cx(b) - cx(a);
+      var arrow = document.createElement("div");
+      arrow.className = "arrow " + (f < t ? "r" : "l");
+      arrow.style.left = left + "%";
+      arrow.style.top = (ROW - 10) + "px";
+      arrow.style.width = width + "%";
+      var lab = document.createElement("div");
+      lab.className = "alabel";
+      lab.style.left = left + "%";
+      lab.style.width = width + "%";
+      lab.innerHTML = num + st.label;
+      lane.appendChild(arrow);
+      lane.appendChild(lab);
+    }
+    lanes.appendChild(lane);
+  }
+
+  function render(i) {
+    lanes.innerHTML = "";
+    cfg.actors.forEach(function (a, k) {
+      var line = document.createElement("div");
+      line.className = "lifeline";
+      line.style.left = cx(k) + "%";
+      lanes.appendChild(line);
+    });
+    for (var k = 1; k <= i; k++) addLane(k, k === i);
+    var s = stateAt(i);
+    cfg.actors.forEach(function (a) {
+      var txt = s[a.id] || "";
+      pills[a.id].textContent = txt;
+      pills[a.id].classList.toggle("on", txt.indexOf("✓") > -1);
+    });
+    infoEl.textContent = cfg.steps[i].info || "";
+  }
+
+  createStepper({ steps: cfg.steps, onStep: function (i) { render(i); return 0; } });
+}
+
+createFlow({"actors":[{"id":"b","icon":"🌐","name":"Browser"},{"id":"s","icon":"🖥️","name":"Web server","sub":"learn.example.com"}],"steps":[{"msg":"<strong>Start:</strong> The TCP handshake is done, but anything sent now would be readable by anyone on the path. Before sending HTTP, the browser and server run a <b>TLS handshake</b> to agree on secret keys. Press <b>Next step</b>."},{"msg":"<strong>Step 1 – ClientHello:</strong> The browser says which TLS version and <b>cipher suites</b> (encryption methods) it supports, plus a random number and its half of a key exchange.","from":"b","to":"s","label":"ClientHello","info":"TLS 1.3 · cipher suites · client random · key share · server name (SNI)"},{"msg":"<strong>Step 2 – ServerHello and certificate:</strong> The server picks a cipher suite, sends its half of the key exchange, and sends its <b>certificate</b>, which says \"this public key belongs to learn.example.com\".","from":"s","to":"b","label":"ServerHello + Certificate","info":"Chosen cipher · server key share · certificate signed by a trusted CA"},{"msg":"<strong>Step 3 – Verify the certificate:</strong> The browser checks that the certificate is <b>signed by a trusted Certificate Authority (CA)</b>, matches the domain, has not expired and has not been revoked. If not, you see a big warning.","from":"b","to":"b","label":"Check certificate","st":{"b":"Verifying…"}},{"msg":"<strong>Step 4 – Browser makes the key:</strong> Using the two key shares, the browser computes a <b>shared secret</b> (a session key) without it ever being sent over the wire.","from":"b","to":"b","label":"Computes session key"},{"msg":"<strong>Step 5 – Server makes the same key:</strong> The server does its own math and gets exactly the same session key. Both sides now share a secret that nobody else knows.","from":"s","to":"s","label":"Computes same key","st":{"b":"Secure ✓","s":"Secure ✓"}},{"msg":"<strong>Step 6 – Finished:</strong> The browser sends a \"Finished\" message, already encrypted, to prove the handshake was not tampered with.","from":"b","to":"s","label":"🔒 Finished","info":"Encrypted handshake confirmation"},{"msg":"<strong>Step 7 – Encrypted request:</strong> Now the real HTTP request is sent, but encrypted with the fast <b>symmetric</b> session key.","from":"b","to":"s","label":"🔒 GET /account","info":"Encrypted application data · looks like random bytes"},{"msg":"<strong>Step 8 – Encrypted response:</strong> The server replies, also encrypted.","from":"s","to":"b","label":"🔒 200 OK + page","info":"Encrypted application data"},{"msg":"<strong>Step 9 – Eavesdroppers see noise:</strong> Someone listening on the Wi-Fi sees only gibberish (and still can see which server you contacted and the amount of data).","from":"b","to":"b","label":"Listeners see gibberish"}]});
+initQuiz([{"q":"What is HTTPS?","o":["HTTP running over TLS (encrypted)","HTTP with a faster server","A different language than HTTP","HTTP over UDP only"],"a":0,"e":"HTTPS = HTTP + TLS."},{"q":"Which three things does TLS provide?","o":["Encryption, integrity and authentication","Speed, caching and compression","Routing, switching and NAT","Hashing, salting and phishing"],"a":0,"e":"Confidentiality, integrity and authentication."},{"q":"What does a website's certificate prove?","o":["That the public key belongs to that domain, as vouched for by a CA","That the site is safe and honest","That the server is fast","That the site has no malware"],"a":0,"e":"It proves identity, not trustworthiness."},{"q":"What is a Certificate Authority (CA)?","o":["A trusted organisation that signs certificates","A type of firewall","A DNS root server","A browser extension"],"a":0,"e":"Browsers trust a list of CAs."},{"q":"Why does TLS use asymmetric cryptography and then symmetric encryption?","o":["Asymmetric helps agree on a key safely, symmetric is much faster for data","Symmetric is more secure but slow","Asymmetric is only for images","It does not use either"],"a":0,"e":"The handshake sets up a shared secret, then fast symmetric encryption is used."},{"q":"What is the session key?","o":["A shared secret used to encrypt the data of this connection","The website's password","The user's password","The certificate itself"],"a":0,"e":"Both sides derive it during the handshake."},{"q":"What can an eavesdropper on HTTPS traffic still see?","o":["Which server you contacted and roughly how much data","Your passwords","The page content","Your cookies"],"a":0,"e":"The content is encrypted, but metadata like destination and size is visible."},{"q":"Why does the browser show a warning for an expired or mismatched certificate?","o":["It cannot verify the server's identity, so it could be a man-in-the-middle","The website is too popular","The router is broken","JavaScript is disabled"],"a":0,"e":"Never click through certificate warnings on important sites."},{"q":"Does the padlock mean a website is safe and trustworthy?","o":["No, it only means the connection is encrypted to that domain","Yes, always","Yes, but only on banks","Only if it is green"],"a":0,"e":"Phishing sites can also use HTTPS."},{"q":"What is in the ClientHello message?","o":["Supported TLS versions, cipher suites, a random value and a key share","The user's password","The full web page","The server's private key"],"a":0,"e":"The client offers its capabilities."},{"q":"What is forward secrecy?","o":["Past sessions stay secret even if the server's private key is stolen later","The server never forgets keys","Connections stay open forever","Passwords are hashed twice"],"a":0,"e":"Temporary session keys make old recordings useless."},{"q":"Why should SSL and TLS 1.0 be disabled?","o":["They have known weaknesses","They are too new","They only work on Windows","They are too fast"],"a":0,"e":"Modern servers use TLS 1.2 or 1.3."},{"q":"Can a man-in-the-middle silently read HTTPS traffic?","o":["Not without a certificate the browser trusts for that domain","Yes, easily","Yes, if they are on the same Wi-Fi","Only on mobile"],"a":0,"e":"They cannot present a valid certificate, so the browser warns."}]);
+  </script>
+</body>
+</html>
