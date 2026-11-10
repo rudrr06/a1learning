@@ -605,3 +605,108 @@ footer { text-align: center; padding: 28px 20px; font-size: 0.9rem; opacity: 0.5
   .slot { width: 34px; height: 34px; }
   .pl { width: 52px; }
 }
+
+/* =====================================================================
+   v4 COLOURS: navy + beige blended with soft gradients, no hard lines.
+   Only this block changes colours. Edit --accent lines to change accent.
+   ===================================================================== */
+:root {
+  --navy: #14213D; --navy-2: #1B2D52; --navy-3: #263E70;
+  --cream: #F4EDE0; --cream-2: #EADFC8; --paper: #FBF7EE;
+  --gold: #FF6B5B; --gold-light: #FF9A8B; --gold-dark: #B93A2D; /* accent (coral) */
+  --bad: #C8433A;
+  --shadow: 0 18px 40px rgba(6, 12, 28, 0.38);
+}
+
+body {
+  background:
+    radial-gradient(900px 520px at 90% -5%, rgba(244, 237, 224, 0.22), transparent 62%),
+    radial-gradient(800px 600px at -8% 38%, rgba(255, 107, 91, 0.10), transparent 62%),
+    radial-gradient(900px 600px at 75% 65%, rgba(90, 130, 210, 0.14), transparent 65%),
+    linear-gradient(180deg, #1D2F57 0%, #14213D 40%, #101B33 100%);
+}
+
+/* header: navy on the left melting into beige on the right */
+.site-header {
+  background: linear-gradient(100deg, #14213D 0%, #1B2D52 42%, #7F8AA3 74%, #EADFC8 100%);
+  color: var(--cream);
+  box-shadow: 0 10px 30px rgba(6, 12, 28, 0.35);
+}
+.logo span { color: var(--gold-light); }
+.site-header nav a { color: var(--navy); opacity: 0.9; }
+
+/* hero: navy with a warm beige glow rising from below */
+.hero {
+  color: var(--cream);
+  background:
+    radial-gradient(85% 75% at 50% 118%, rgba(244, 237, 224, 0.85), rgba(244, 237, 224, 0.25) 45%, transparent 75%),
+    radial-gradient(50% 70% at 12% 0%, rgba(255, 107, 91, 0.22), transparent 60%),
+    linear-gradient(180deg, #263E70, #14213D);
+  box-shadow: none;
+}
+.hero h1 em { color: var(--gold-light); }
+.hero p { opacity: 0.9; }
+.how span { background: rgba(16, 27, 51, 0.72); color: var(--cream); }
+
+/* cards + panels: navy with a soft beige light in one corner, no borders */
+.card, .panel {
+  border: 0;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(244, 237, 224, 0.17), transparent 55%),
+    linear-gradient(155deg, #263E70, #1B2D52 55%, #14213D);
+}
+.card:hover { border-color: transparent; filter: brightness(1.1); }
+.tag { background: rgba(244, 237, 224, 0.92); color: var(--navy); }
+
+/* simulation card: beige that fades into navy haze */
+.sim {
+  border-radius: 22px;
+  background:
+    radial-gradient(90% 80% at 100% 100%, rgba(20, 33, 61, 0.15), transparent 60%),
+    radial-gradient(70% 60% at 0% 0%, rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(160deg, #F8F2E6, #EEE3CE 60%, #E4D6BC);
+}
+.sim-message { border-left: 0; background: linear-gradient(90deg, rgba(255, 107, 91, 0.17), rgba(20, 33, 61, 0.05) 75%); }
+.sim-controls { background: rgba(251, 247, 238, 0.92); }
+.btn-main { background: linear-gradient(135deg, #FF9A8B, #FF6B5B); box-shadow: 0 6px 16px rgba(255, 107, 91, 0.4); }
+.btn-ghost { border: 0; background: rgba(20, 33, 61, 0.08); }
+.btn-ghost:hover:not(:disabled) { background: rgba(20, 33, 61, 0.16); }
+.btn-light { border: 0; background: rgba(244, 237, 224, 0.13); }
+.btn-light:hover:not(:disabled) { background: rgba(244, 237, 224, 0.24); }
+
+/* devices, packets, tracks */
+.device, .flow-actor { border: 0; color: var(--cream); background: linear-gradient(155deg, #263E70, #14213D); box-shadow: 0 10px 22px rgba(20, 33, 61, 0.3); }
+.pill { background: rgba(244, 237, 224, 0.92); color: var(--navy); }
+.pill.on { background: var(--gold); }
+.track::before { border-top: 0; height: 4px; margin-top: -2px; border-radius: 4px; background: linear-gradient(90deg, rgba(20, 33, 61, 0.04), rgba(20, 33, 61, 0.4), rgba(20, 33, 61, 0.04)); }
+.packet { border: 0; background: linear-gradient(135deg, #FF9A8B, #FF6B5B); color: var(--navy); }
+.lifeline { border-left: 0; width: 2px; margin-left: -1px; background: linear-gradient(180deg, rgba(20, 33, 61, 0), rgba(20, 33, 61, 0.3) 12%, rgba(20, 33, 61, 0.3) 88%, rgba(20, 33, 61, 0)); }
+.lane-note { border: 0; background: var(--paper); box-shadow: 0 4px 12px rgba(20, 33, 61, 0.15); }
+.lane.now .lane-note { background: #FFE3DD; }
+
+/* explanation + quiz: tinted fills instead of lines */
+.steps-list li.active { border-left-color: transparent; background: linear-gradient(90deg, rgba(255, 107, 91, 0.22), rgba(244, 237, 224, 0.03)); }
+.option { border: 0; background: rgba(244, 237, 224, 0.08); }
+.option:hover:not(:disabled) { border-color: transparent; background: rgba(255, 107, 91, 0.2); }
+.option.correct { background: rgba(47, 143, 107, 0.4); border-color: transparent; }
+.option.wrong { background: rgba(200, 67, 58, 0.45); border-color: transparent; }
+
+/* small cards inside simulations: soft shadow instead of outline */
+.login-mock, .detail, .mail, .fake-form { border: 0; box-shadow: 0 6px 18px rgba(20, 33, 61, 0.12); }
+.bit.host { background: rgba(255, 107, 91, 0.28); }
+.panel .bit.host { background: rgba(255, 107, 91, 0.3); color: var(--gold-light); }
+
+/* keep GOLD where the page text says "gold" */
+.code .inp { color: #E9C46A; background: rgba(233, 196, 106, 0.16); }
+.slot.re { background: #E9C46A; border-color: #B8902B; color: var(--navy); }
+
+/* footer melts into beige at the bottom of every page */
+footer {
+  margin-top: 30px;
+  padding: 80px 20px 26px;
+  opacity: 1;
+  font-weight: 600;
+  color: var(--navy);
+  background: linear-gradient(180deg, rgba(244, 237, 224, 0), rgba(244, 237, 224, 0.92));
+}
