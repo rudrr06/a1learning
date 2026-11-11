@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>Finding Your Way Around Linux – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+.gstage{position:relative;height:var(--gh);margin:8px 0 14px}
+.glinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.glink,.glink-bg{vector-effect:non-scaling-stroke;fill:none;stroke-linecap:round}
+.glink-bg{stroke:rgba(20,33,61,.10);stroke-width:9px}
+.glink{stroke:rgba(20,33,61,.55);stroke-width:2.5px}
+.glink.hot{stroke:#FF6B5B}.glink.good{stroke:#2E9E6B}.glink.bad{stroke:#C8433A}
+.glink.dim{stroke:rgba(20,33,61,.18)}.glink.down{stroke:rgba(200,67,58,.5);stroke-dasharray:3 7}
+.glink.tunnel{stroke:#B8872B;stroke-dasharray:8 6}
+.glabel{position:absolute;transform:translate(-50%,-50%);font-size:.68rem;font-weight:700;color:#14213D;background:rgba(244,237,224,.92);padding:1px 7px;border-radius:99px;pointer-events:none}
+.glabel:empty{display:none}
+.gnode{position:absolute;transform:translate(-50%,-50%);width:96px;text-align:center;padding:8px 4px 7px;border-radius:16px;color:#F4EDE0;background:linear-gradient(160deg,#1B2D52,#14213D);box-shadow:0 6px 16px rgba(20,33,61,.28);transition:box-shadow .3s,opacity .3s,background .3s;z-index:2}
+.gi{font-size:1.6rem;line-height:1.1}.gl{font-size:.78rem;font-weight:700;margin-top:2px}
+.gs{font-size:.62rem;opacity:.7}.gs:empty{display:none}
+.gt{font-size:.64rem;font-weight:700;margin-top:3px;color:#FFD9D2}.gt:empty{display:none}
+.gnode.hot{box-shadow:0 0 0 3px rgba(255,107,91,.7),0 6px 18px rgba(255,107,91,.4)}
+.gnode.good{background:linear-gradient(160deg,#2E7F63,#1F5E48);box-shadow:0 0 0 3px rgba(46,158,107,.55)}
+.gnode.good .gt{color:#D8FFEA}
+.gnode.bad{background:linear-gradient(160deg,#A8372F,#7C2620);box-shadow:0 0 0 3px rgba(200,67,58,.6)}
+.gnode.dim{filter:grayscale(.9) brightness(1.5)}.gnode.down{filter:grayscale(.9) brightness(1.4)}
+.gnode.c1{background:linear-gradient(160deg,#2F7FA8,#1F5878)}
+.gnode.c2{background:linear-gradient(160deg,#8A5BB0,#5E3A80)}
+.gnode.c3{background:linear-gradient(160deg,#B8872B,#8A6218)}
+.gpkt{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:none;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:.7rem;font-weight:800;background:#FF6B5B;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.gpkt.good{background:#2E9E6B}.gpkt.bad{background:#C8433A}
+.spanel{background:linear-gradient(160deg,#1B2D52,#14213D);color:#F4EDE0;border-radius:16px;padding:14px 16px;margin-top:12px;font-size:.9rem;min-height:60px}
+.spanel.fade{animation:spf .4s}@keyframes spf{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+.sp-title{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:8px;font-weight:700}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{text-align:left;font-size:.7rem;opacity:.6;font-weight:700;padding:3px 8px}
+.tbl td{padding:6px 8px;background:rgba(244,237,224,.07)}
+.tbl tr+tr td{border-top:2px solid #14213D}
+.tbl tr.hl td{background:rgba(255,107,91,.32)}.tbl tr.ok td{background:rgba(46,158,107,.3)}
+.tbl tr.no td{background:rgba(200,67,58,.35)}.tbl tr.dim td{opacity:.45}
+.badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:.7rem;font-weight:800;background:rgba(244,237,224,.2)}
+.badge.ok{background:#2E9E6B;color:#fff}.badge.no{background:#C8433A;color:#fff}
+.badge.b1{background:#2F7FA8;color:#fff}.badge.b2{background:#8A5BB0;color:#fff}
+.term{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.7;background:rgba(0,0,0,.28);border-radius:10px;padding:10px 12px;overflow-x:auto}
+.term .g{color:#7EE0A8}.term .r{color:#FF9A8B}.term .y{color:#E9C46A}.term .d{opacity:.6}
+.mk{margin:8px 0 0;font-size:.82rem;opacity:.85}
+.cmt{background:rgba(244,237,224,.09);border-radius:10px;padding:7px 10px;margin-bottom:6px;font-size:.85rem;overflow-wrap:anywhere}
+.cmt.bad{background:rgba(200,67,58,.4)}
+.url{font-family:ui-monospace,Menlo,monospace;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:10px;font-size:.82rem;overflow-x:auto;margin-bottom:8px}
+.url .hot,.url b{color:#FFB3A8}
+.inv{background:rgba(244,237,224,.1);border-radius:10px;padding:10px 12px;line-height:1.6}.inv.bad{background:rgba(200,67,58,.4)}
+.frame{display:flex;gap:4px;flex-wrap:wrap}.frame span{background:rgba(244,237,224,.12);padding:7px 9px;border-radius:8px;font-size:.78rem}
+.frame span.hot{background:#FF6B5B;color:#fff;font-weight:700}
+@media(max-width:560px){.gstage{height:var(--ghm)}.gnode{width:74px;padding:6px 2px}.gi{font-size:1.25rem}.gl{font-size:.68rem}.gs,.gt{font-size:.56rem}.gpkt{font-size:.6rem;padding:2px 6px}.glabel{font-size:.58rem}.tbl{font-size:.74rem}.tbl td{padding:5px 5px}}
+
+.codebox{background:#101B33;border-radius:14px;padding:10px 0;margin:8px 0 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;overflow-x:auto}
+.cl{display:flex;gap:10px;padding:2px 14px;color:#DDE3F0;white-space:pre;border-radius:0}
+.cl .ln{opacity:.35;width:1.4em;text-align:right;flex:none}
+.cl.on{background:linear-gradient(90deg,rgba(255,107,91,.45),rgba(255,107,91,.08))}
+.cl .k{color:#FF9A8B}.cl .s{color:#E9C46A}.cl .n{color:#7EE0A8}.cl .c{opacity:.5}
+.console{background:#0B1326;color:#E8EDF7;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;line-height:1.6;max-height:230px;overflow:auto}
+.console .ch{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin-bottom:4px;font-family:inherit}
+.console .pr{color:#7EE0A8}.console .d{opacity:.5}.console .er{color:#FF9A8B}.console .ok{color:#7EE0A8}
+.cur{display:inline-block;width:8px;height:1em;background:#E8EDF7;vertical-align:text-bottom;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.pm{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px 8px;align-items:center;font-size:.85rem}
+.pm .h{font-size:.7rem;opacity:.6;font-weight:700;text-align:center}
+.pm i{font-style:normal;text-align:center;padding:5px 0;border-radius:8px;background:rgba(244,237,224,.08);opacity:.55;font-weight:700}
+.pm i.on{background:#2E9E6B;opacity:1;color:#fff}.pm i.bad{background:#C8433A;opacity:1;color:#fff}
+.pm .nm{text-align:center;font-weight:700}
+.tree{font-family:ui-monospace,Menlo,monospace;font-size:.84rem;line-height:1.65;white-space:pre;overflow-x:auto}
+.tree b{background:#FF6B5B;color:#fff;padding:0 7px;border-radius:6px}
+.vars{display:flex;gap:10px;flex-wrap:wrap}
+.vbox{background:rgba(244,237,224,.1);border-radius:12px;padding:8px 14px;text-align:center;min-width:86px}
+.vbox .vn{font-size:.72rem;opacity:.7}.vbox .vv{font-size:1.15rem;font-weight:800;margin:2px 0}.vbox .vt{font-size:.65rem;opacity:.55}
+.vbox.ch{background:rgba(255,107,91,.4);animation:spf .5s}
+.stack{display:flex;flex-direction:column;gap:6px}
+.frame2{background:rgba(244,237,224,.1);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem}
+.frame2.top{background:rgba(255,107,91,.4)}
+.life{margin-top:10px;padding:8px 12px;border-radius:10px;background:rgba(233,196,106,.16);font-size:.84rem}
+@media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="linux.html">← Linux</a>
+    <h1 class="page-title">Finding Your Way Around Linux</h1>
+    <p class="page-sub">Linux has no desktop windows to click. You move around by typing. Press Next step to run each command.</p>
+
+    <div class="sim">
+      <div class="sim-message" id="msg"></div>
+      <div class="codebox" id="codebox"></div>
+      <div class="console" id="console"></div>
+      <div class="spanel" id="gpanel"></div>
+      <div class="sim-controls">
+        <button class="btn-main" id="nextBtn">Next step →</button>
+        <button class="btn-ghost" id="backBtn">← Back</button>
+        <button class="btn-ghost" id="playBtn">▶ Auto play</button>
+        <button class="btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="sim-progress">
+        <div class="dots" id="dots"></div>
+        <span class="step-count" id="stepCount"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What just happened?</h2>
+      <p class="hint">The step you are on lights up here.</p>
+      <ol class="steps-list">
+        <li data-step="0"><b>The tree</b> – Everything in Linux is a file or folder under / (root).</li>
+        <li data-step="1"><b>pwd</b> – Shows your current location as a full path.</li>
+        <li data-step="2"><b>ls</b> – Lists the contents. Try ls -l for details and ls -a to show hidden files.</li>
+        <li data-step="3"><b>cd folder</b> – Move into a folder.</li>
+        <li data-step="4"><b>cd ..</b> – Move up to the parent folder.</li>
+        <li data-step="5"><b>mkdir</b> – Create a new folder.</li>
+        <li data-step="6"><b>cd projects</b> – Move into the folder you just made.</li>
+        <li data-step="7"><b>touch</b> – Create an empty file.</li>
+        <li data-step="8"><b>ls again</b> – Confirm the file exists.</li>
+        <li data-step="9"><b>Absolute vs relative</b> – /etc is absolute (from the top). Documents is relative (from here). "cd" alone returns to home.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Why it matters</h2>
+      <p><b>Linux</b> runs most servers, cloud machines, routers and security tools (Kali, Parrot). Almost every cyber job expects you to be comfortable in a terminal.</p>
+      <p><b>Tip:</b> press the Tab key to auto-complete names and the Up arrow to repeat old commands. It saves a lot of typing.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Test yourself</h2>
+      <div id="quizRoot"></div>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+/* a1learning – shared helpers for step-by-step simulations */
+
+function createStepper(cfg) {
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg"), next = $("nextBtn"), back = $("backBtn"), reset = $("resetBtn");
+  var play = $("playBtn"), count = $("stepCount"), dots = $("dots");
+  var total = cfg.steps.length - 1;
+  var cur = 0, busy = false, playing = false, timer = null;
+
+  for (var d = 0; d < total; d++) {
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function paint(fresh) {
+    msg.innerHTML = cfg.steps[cur].msg;
+    if (fresh) {
+      msg.classList.remove("fade");
+      void msg.offsetWidth;
+      msg.classList.add("fade");
+    }
+    count.textContent = "Step " + cur + " of " + total;
+    Array.prototype.forEach.call(dots.children, function (el, i) {
+      el.classList.toggle("done", i < cur);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".steps-list li"), function (li) {
+      var r = String(li.getAttribute("data-step")).split("-"); var lo = Number(r[0]), hi = Number(r[1] || r[0]); li.classList.toggle("active", cur >= lo && cur <= hi);
+    });
+    back.disabled = busy || cur === 0;
+    next.disabled = busy || cur === total;
+    reset.disabled = busy;
+    next.textContent = cur === total ? "Done ✓" : "Next step →";
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearTimeout(timer);
+    play.textContent = "▶ Auto play";
+  }
+
+  function go(i) {
+    if (busy || i < 0 || i > total) return;
+    var prev = cur;
+    cur = i;
+    busy = true;
+    paint(true);
+    var ms = cfg.onStep(cur, prev) || 0;
+    setTimeout(function () {
+      busy = false;
+      paint(false);
+      if (playing) {
+        if (cur < total) {
+          timer = setTimeout(function () { go(cur + 1); }, 800);
+        } else {
+          stopPlay();
+        }
+      }
+    }, ms);
+  }
+
+  next.onclick = function () { stopPlay(); go(cur + 1); };
+  back.onclick = function () { stopPlay(); go(cur - 1); };
+  reset.onclick = function () {
+    stopPlay();
+    cur = 0;
+    busy = false;
+    cfg.onStep(0, 1);
+    paint(true);
+  };
+  play.onclick = function () {
+    if (playing) { stopPlay(); return; }
+    if (cur === total && !busy) {
+      cur = 0;
+      cfg.onStep(0, 1);
+      paint(true);
+    }
+    playing = true;
+    play.textContent = "⏸ Pause";
+    if (!busy) go(cur + 1);
+  };
+
+  cfg.onStep(0, 0);
+  paint(true);
+}
+
+/* Slide a labelled packet along a track. dir = "right" or "left". */
+function flyPacket(packet, track, label, dir, ms) {
+  packet.textContent = label;
+  packet.style.opacity = 1;
+  var dist = track.clientWidth - packet.offsetWidth;
+  var from = dir === "right" ? 0 : dist;
+  var to = dir === "right" ? dist : 0;
+  var anim = packet.animate(
+    [{ left: from + "px" }, { left: to + "px" }],
+    { duration: ms, easing: "ease-in-out", fill: "forwards" }
+  );
+  anim.onfinish = function () {
+    packet.style.opacity = 0;
+    anim.cancel();
+  };
+}
+
+/* Set a text field instantly (mask = show dots). */
+function setField(el, text, mask) {
+  clearInterval(el._t);
+  el.value = mask ? "•".repeat(text.length) : text;
+}
+
+/* Type text into a field one character at a time. */
+function typeInto(el, text, ms, mask) {
+  clearInterval(el._t);
+  el.value = "";
+  var n = text.length;
+  if (!n) return;
+  var i = 0;
+  el._t = setInterval(function () {
+    i++;
+    el.value = mask ? "•".repeat(i) : text.slice(0, i);
+    if (i >= n) clearInterval(el._t);
+  }, ms / n);
+}
+
+/* a1learning – optional MCQ practice. Questions: {q, o:[options], a:correctIndex, e:explanation} */
+
+function initQuiz(questions) {
+  var root = document.getElementById("quizRoot");
+  var total = questions.length;
+  var order = [], idx = 0, score = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function shuffle(arr) {
+    var b = arr.slice();
+    for (var i = b.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = b[i]; b[i] = b[j]; b[j] = t;
+    }
+    return b;
+  }
+
+  function intro() {
+    root.innerHTML = "";
+    root.appendChild(el("p", "quiz-intro",
+      "Want to check what you learned? Practice with " + total +
+      " multiple-choice questions on this topic. It's totally optional."));
+    var b = el("button", "btn-main", "Start MCQ practice");
+    b.onclick = start;
+    root.appendChild(b);
+  }
+
+  function start() {
+    order = shuffle(questions);
+    idx = 0;
+    score = 0;
+    show();
+  }
+
+  function show() {
+    var q = order[idx];
+    root.innerHTML = "";
+
+    var top = el("div", "q-top");
+    top.appendChild(el("span", "", "Question " + (idx + 1) + " of " + total));
+    top.appendChild(el("span", "", "Score: " + score));
+    var bar = el("div", "q-bar");
+    var fill = el("div", "q-fill");
+    fill.style.width = (idx / total * 100) + "%";
+    bar.appendChild(fill);
+
+    root.appendChild(top);
+    root.appendChild(bar);
+    root.appendChild(el("p", "q-text", q.q));
+
+    var list = el("div", "options");
+    var fb = el("div", "feedback");
+    var actions = el("div", "q-actions");
+    var nextBtn = el("button", "btn-main", idx === total - 1 ? "See result" : "Next question →");
+    nextBtn.style.display = "none";
+    nextBtn.onclick = function () {
+      idx++;
+      if (idx < total) show(); else finish();
+    };
+    actions.appendChild(nextBtn);
+
+    var opts = shuffle(q.o.map(function (t, i) { return { t: t, ok: i === q.a }; }));
+    opts.forEach(function (o) {
+      var b = el("button", "option", o.t);
+      b._ok = o.ok;
+      b.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (x) {
+          x.disabled = true;
+          if (x._ok) x.classList.add("correct");
+        });
+        if (o.ok) {
+          score++;
+          fb.textContent = "✓ Correct. " + q.e;
+        } else {
+          b.classList.add("wrong");
+          fb.textContent = "✗ Not quite. " + q.e;
+        }
+        nextBtn.style.display = "inline-block";
+      };
+      list.appendChild(b);
+    });
+
+    root.appendChild(list);
+    root.appendChild(fb);
+    root.appendChild(actions);
+  }
+
+  function finish() {
+    root.innerHTML = "";
+    var pct = score / total;
+    var note = pct >= 0.8
+      ? "Great work. You understand this topic well."
+      : pct >= 0.5
+        ? "Good start. Replay the simulation once more, then try again."
+        : "Watch the simulation again, then try again. It gets easier.";
+    root.appendChild(el("div", "q-score", score + " / " + total));
+    root.appendChild(el("p", "", note));
+    var actions = el("div", "q-actions");
+    var again = el("button", "btn-main", "Try again");
+    again.onclick = start;
+    var up = el("button", "btn-light", "Back to simulation");
+    up.onclick = function () { window.scrollTo({ top: 0, behavior: "smooth" }); };
+    actions.appendChild(again);
+    actions.appendChild(up);
+    root.appendChild(actions);
+  }
+
+  intro();
+}
+
+/* a1learning – code/terminal stepper: highlighted code lines, console output, live state panel */
+function createCode(cfg) {
+  var box = document.getElementById("codebox"), con = document.getElementById("console");
+  var panel = document.getElementById("gpanel"), steps = cfg.steps, rows = [];
+  if (cfg.lines && box) {
+    box.innerHTML = "";
+    cfg.lines.forEach(function (t, i) {
+      var d = document.createElement("div");
+      d.className = "cl";
+      d.innerHTML = '<span class="ln">' + (i + 1) + '</span><span class="ct">' + (t || "&nbsp;") + "</span>";
+      box.appendChild(d); rows.push(d);
+    });
+  } else if (box) box.style.display = "none";
+  function render(i) {
+    var k, html = "", out = "", ln = -1, st;
+    for (k = 0; k <= i; k++) {
+      st = steps[k];
+      if (st.cmd) out += '<div><span class="pr">' + (cfg.prompt || "$") + "</span> " + st.cmd + "</div>";
+      if (st.out) out += "<div>" + (Array.isArray(st.out) ? st.out.join("<br>") : st.out) + "</div>";
+    }
+    st = steps[i];
+    ln = st.line === undefined ? -1 : st.line;
+    rows.forEach(function (r, j) { r.classList.toggle("on", j === ln); });
+    for (k = i; k >= 0; k--) if (steps[k].p !== undefined) { html = steps[k].p; break; }
+    if (panel._last !== html) {
+      panel.innerHTML = html; panel._last = html;
+      panel.classList.remove("fade"); void panel.offsetWidth; panel.classList.add("fade");
+    }
+    con.innerHTML = '<div class="ch">' + (cfg.title || "Output") + "</div>" + (out || '<div class="d">(nothing yet)</div>') +
+      (cfg.prompt ? '<div><span class="pr">' + cfg.prompt + '</span> <span class="cur"></span></div>' : "");
+    con.scrollTop = con.scrollHeight;
+  }
+  createStepper({ steps: steps, onStep: function (i) { render(i); return 0; } });
+}
+
+createCode({"prompt":"alice@pc:$","title":"Terminal","steps":[{"msg":"Linux files live in a <b>tree<\/b> of folders. The top is <b>/<\/b> (called \"root\"). Your own files live in your <b>home folder<\/b>. You are standing in it right now.","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ <b>📍 alice<\/b>\n      └ Documents/\n      └ Downloads/\n  └ etc/\n  └ tmp/<\/div><div class=\"life\">🏠 In real life: folders are like rooms in a house; you can only be in one room at a time.<\/div>"},{"msg":"<b>pwd<\/b> means \"print working directory\": <i>where am I?<\/i>","cmd":"pwd","out":"/home/alice","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ <b>📍 alice<\/b>\n      └ Documents/\n      └ Downloads/\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"<b>ls<\/b> lists what is inside the current folder.","cmd":"ls","out":"Documents &nbsp;Downloads"},{"msg":"<b>cd<\/b> means \"change directory\": walk into a folder. The 📍 moves.","cmd":"cd Documents","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ alice/\n      └ <b>📍 Documents<\/b>\n      └ Downloads/\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"<b>cd ..<\/b> goes one level up (two dots = the parent folder).","cmd":"cd ..","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ <b>📍 alice<\/b>\n      └ Documents/\n      └ Downloads/\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"<b>mkdir<\/b> makes a new folder.","cmd":"mkdir projects","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ <b>📍 alice<\/b>\n      └ Documents/\n      └ Downloads/\n      └ projects/\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"Walk into the new folder.","cmd":"cd projects","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ alice/\n      └ Documents/\n      └ Downloads/\n      └ <b>📍 projects<\/b>\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"<b>touch<\/b> creates an empty file (or updates its time if it exists).","cmd":"touch notes.txt","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ alice/\n      └ Documents/\n      └ Downloads/\n      └ <b>📍 projects<\/b>\n  └ etc/\n  └ tmp/<\/div>"},{"msg":"List again. The new file is there.","cmd":"ls","out":"notes.txt"},{"msg":"A path starting with <b>/<\/b> is <b>absolute<\/b>: it starts from the very top, so it works from anywhere. Paths without a leading / are <b>relative<\/b> to where you are.","cmd":"cd /etc","p":"<div class=\"sp-title\">File system (you are at the 📍)<\/div><div class=\"tree\">/\n  └ home/\n    └ alice/\n      └ Documents/\n      └ Downloads/\n      └ projects/\n  └ <b>📍 etc<\/b>\n  └ tmp/<\/div><div class=\"life\">🏠 In real life: absolute = full street address; relative = \"two doors down from here\".<\/div>"}]});
+initQuiz([{"q":"What does pwd show?","o":["The folder you are currently in","Your password","The Wi-Fi name","Running programs"],"a":0,"e":"pwd = print working directory."},{"q":"Which command lists files in a folder?","o":["ls","cd","mkdir","pwd"],"a":0,"e":"ls lists contents."},{"q":"Which command moves up one folder?","o":["cd ..","cd /","ls ..","mkdir .."],"a":0,"e":"Two dots mean the parent folder."},{"q":"What is \"/\" in Linux?","o":["The root (top) of the file system","A comment","The home folder","A hidden file"],"a":0,"e":"Everything lives under /."},{"q":"Which command creates a new folder?","o":["mkdir","touch","rm","ls"],"a":0,"e":"mkdir = make directory."},{"q":"Which command creates an empty file?","o":["touch","mkdir","cd","pwd"],"a":0,"e":"touch creates empty files."},{"q":"Which is an absolute path?","o":["/home/alice/Documents","Documents","../Documents","notes.txt"],"a":0,"e":"Absolute paths start with /."},{"q":"What does \"cd\" with no folder name do?","o":["Takes you to your home folder","Deletes the folder","Lists files","Closes the terminal"],"a":0,"e":"cd alone returns home."},{"q":"How do you show hidden files?","o":["ls -a","ls -x","hide","cd -a"],"a":0,"e":"Hidden files start with a dot."},{"q":"Is Linux case-sensitive?","o":["Yes, Notes.txt and notes.txt are different files","No, never","Only for folders","Only for root"],"a":0,"e":"Linux treats upper and lower case as different."}]);
+  </script>
+</body>
+</html>
