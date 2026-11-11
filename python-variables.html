@@ -79,6 +79,8 @@
 .frame2{background:rgba(244,237,224,.1);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem}
 .frame2.top{background:rgba(255,107,91,.4)}
 .life{margin-top:10px;padding:8px 12px;border-radius:10px;background:rgba(233,196,106,.16);font-size:.84rem}
+#pyCode{width:100%;box-sizing:border-box;background:#101B33;color:#E8EDF7;border:0;border-radius:12px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.55;resize:vertical;tab-size:4;outline:none}#pyCode:focus{box-shadow:0 0 0 3px rgba(255,107,91,.5)}
+.pystatus{font-size:.8rem;opacity:.75;margin:8px 0 6px;min-height:1.2em}#pyOut{min-height:48px}#pyOut:empty::before{content:'Output appears here';opacity:.4}
 @media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
 </style>
 </head>
@@ -109,6 +111,25 @@
         <div class="dots" id="dots"></div>
         <span class="step-count" id="stepCount"></span>
       </div>
+    </div>
+
+
+    <div class="panel try">
+      <h2>🐍 Try it yourself</h2>
+      <p class="hint">Real Python runs right here in your browser. Try: change the age, add a True/False variable, or print the type of each one. Press Ctrl+Enter to run.</p>
+      <textarea id="pyCode" spellcheck="false" rows="6">name = "Asha"
+age = 20
+price = 99.5
+print(name, age + 1)
+print(type(price))</textarea>
+      <div class="sim-controls" style="margin-top:10px">
+        <button class="btn-main" id="pyRun">▶ Run code</button>
+        <button class="btn-ghost" id="pyStop" style="display:none">⏹ Stop</button>
+        <button class="btn-ghost" id="pyReset">Reset code</button>
+      </div>
+      <div class="pystatus" id="pyStatus"></div>
+      <div class="console" id="pyOut" aria-live="polite"></div>
+      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB), then runs are instant. <code>input()</code> is not supported here.</p>
     </div>
 
     <div class="panel">
@@ -417,6 +438,66 @@ function createCode(cfg) {
 
 createCode({"lines":["<span class=\"n\">name<\/span> = <span class=\"s\">\"Asha\"<\/span>","age = 20","price = 99.5","age = age + 1","is_student = <span class=\"k\">True<\/span>","<span class=\"k\">print<\/span>(name, age)","<span class=\"k\">print<\/span>(<span class=\"k\">type<\/span>(price))"],"title":"Output","steps":[{"msg":"Python runs code <b>one line at a time, top to bottom<\/b>. The glowing line is the one being run. Memory is empty right now.","p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"The <b>=<\/b> sign does not mean \"equals\". It means <b>store<\/b>. The text \"Asha\" is put in a box called <code>name<\/code>. Text is type <b>str<\/b> (string).","line":0,"p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"A whole number is an <b>int<\/b>.","line":1,"p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox \"><div class=\"vn\">age<\/div><div class=\"vv\">20<\/div><div class=\"vt\">int<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"A number with a decimal point is a <b>float<\/b>.","line":2,"p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox \"><div class=\"vn\">age<\/div><div class=\"vv\">20<\/div><div class=\"vt\">int<\/div><\/div><div class=\"vbox \"><div class=\"vn\">price<\/div><div class=\"vv\">99.5<\/div><div class=\"vt\">float<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"Python first works out the <b>right side<\/b> (20 + 1 = 21), then stores it back in <code>age<\/code>, replacing the old value.","line":3,"p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox ch\"><div class=\"vn\">age<\/div><div class=\"vv\">21<\/div><div class=\"vt\">int<\/div><\/div><div class=\"vbox \"><div class=\"vn\">price<\/div><div class=\"vv\">99.5<\/div><div class=\"vt\">float<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"<b>True<\/b> and <b>False<\/b> are type <b>bool<\/b> (yes/no values). Handy for decisions.","line":4,"p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox \"><div class=\"vn\">age<\/div><div class=\"vv\">21<\/div><div class=\"vt\">int<\/div><\/div><div class=\"vbox \"><div class=\"vn\">price<\/div><div class=\"vv\">99.5<\/div><div class=\"vt\">float<\/div><\/div><div class=\"vbox \"><div class=\"vn\">is_student<\/div><div class=\"vv\">True<\/div><div class=\"vt\">bool<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"<b>print<\/b> shows values on the screen.","line":5,"out":"Asha 21","p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox \"><div class=\"vn\">age<\/div><div class=\"vv\">21<\/div><div class=\"vt\">int<\/div><\/div><div class=\"vbox \"><div class=\"vn\">price<\/div><div class=\"vv\">99.5<\/div><div class=\"vt\">float<\/div><\/div><div class=\"vbox \"><div class=\"vn\">is_student<\/div><div class=\"vv\">True<\/div><div class=\"vt\">bool<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"},{"msg":"<b>type()<\/b> asks Python what kind of value is inside.","line":6,"out":"&lt;class 'float'&gt;","p":"<div class=\"sp-title\">Memory: variables<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">name<\/div><div class=\"vv\">\"Asha\"<\/div><div class=\"vt\">str<\/div><\/div><div class=\"vbox \"><div class=\"vn\">age<\/div><div class=\"vv\">21<\/div><div class=\"vt\">int<\/div><\/div><div class=\"vbox \"><div class=\"vn\">price<\/div><div class=\"vv\">99.5<\/div><div class=\"vt\">float<\/div><\/div><div class=\"vbox \"><div class=\"vn\">is_student<\/div><div class=\"vv\">True<\/div><div class=\"vt\">bool<\/div><\/div><\/div><div class=\"life\">🏠 In real life: a variable is a labelled jar that holds one value.<\/div>"}]});
 initQuiz([{"q":"What does = do in Python?","o":["Stores a value in a variable","Compares two values","Prints text","Ends the program"],"a":0,"e":"It is assignment, not \"equals\"."},{"q":"What type is \"Asha\"?","o":["str","int","float","bool"],"a":0,"e":"Text in quotes is a string."},{"q":"What type is 20?","o":["int","str","float","list"],"a":0,"e":"Whole numbers are int."},{"q":"What type is 99.5?","o":["float","int","str","bool"],"a":0,"e":"Decimals are float."},{"q":"After age = 20 then age = age + 1, what is age?","o":["21","20","1","201"],"a":0,"e":"The new value replaces the old."},{"q":"Which are the two bool values?","o":["True and False","Yes and No","1 and 2","On and Off"],"a":0,"e":"Python spells them True and False."},{"q":"What does print() do?","o":["Shows a value on the screen","Saves a file","Deletes a variable","Prints on paper only"],"a":0,"e":"It outputs to the console."},{"q":"Which function gives the data type?","o":["type()","kind()","what()","show()"],"a":0,"e":"type(price) returns float."},{"q":"Python runs code…","o":["One line at a time, top to bottom","All lines at once","Bottom to top","Randomly"],"a":0,"e":"Order matters."},{"q":"Is \"5\" the same as 5?","o":["No, one is text and one is a number","Yes, always","Only inside print","Only for floats"],"a":0,"e":"Quotes make it a string."}]);
+/* a1learning – "Try it yourself": runs real Python in the browser (Pyodide, in a Web Worker so it can be stopped) */
+(function () {
+  var BASE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+  function workerMain(BASE) {
+    var py = null;
+    importScripts(BASE + "pyodide.js");
+    onmessage = async function (e) {
+      try {
+        if (!py) {
+          postMessage({ t: "status", m: "Loading Python (first time only, about 10 MB)…" });
+          py = await loadPyodide({ indexURL: BASE });
+          py.setStdout({ batched: function (s) { postMessage({ t: "out", m: s }); } });
+          py.setStderr({ batched: function (s) { postMessage({ t: "err", m: s }); } });
+        }
+        postMessage({ t: "status", m: "Running…" });
+        var g = py.globals.get("dict")();
+        try { await py.runPythonAsync(e.data.code, { globals: g }); } finally { g.destroy(); }
+        postMessage({ t: "done" });
+      } catch (err) { postMessage({ t: "error", m: String(err && err.message || err) }); }
+    };
+  }
+  var ta = document.getElementById("pyCode"), out = document.getElementById("pyOut"), st = document.getElementById("pyStatus");
+  var run = document.getElementById("pyRun"), stop = document.getElementById("pyStop"), rst = document.getElementById("pyReset");
+  var start = ta.value, w = null, timer = null;
+  function line(txt, cls) { var d = document.createElement("div"); if (cls) d.className = cls; d.textContent = txt; out.appendChild(d); }
+  function idle(msg) { clearTimeout(timer); run.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
+  function kill(msg) { if (w) { w.terminate(); w = null; } idle(msg); }
+  function make() {
+    var src = "(" + workerMain.toString() + ")(" + JSON.stringify(BASE) + ")";
+    w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = function (e) {
+      var d = e.data;
+      if (d.t === "out") line(d.m);
+      else if (d.t === "err") line(d.m, "er");
+      else if (d.t === "status") {
+        st.textContent = d.m;
+        if (d.m === "Running…") { clearTimeout(timer); timer = setTimeout(function () { kill("Stopped: it ran longer than 10 seconds. Is there an endless loop?"); line("⏹ Stopped after 10 seconds", "er"); }, 10000); }
+      } else if (d.t === "done") idle("Finished ✓");
+      else if (d.t === "error") {
+        var m = d.m, k = m.indexOf('File "<exec>"');
+        line(k >= 0 ? "Traceback (most recent call last):\n  " + m.slice(k) : m, "er");
+        idle("Finished with an error");
+      }
+    };
+    w.onerror = function () { line("Could not load Python. Check your internet connection and try again.", "er"); kill("Failed to load"); };
+  }
+  function go() {
+    out.innerHTML = ""; run.disabled = true; stop.style.display = "inline-block";
+    st.textContent = "Starting…";
+    try { if (!w) make(); w.postMessage({ code: ta.value }); } catch (e) { line("This browser cannot run the Python box.", "er"); idle("Not supported"); }
+  }
+  run.onclick = go;
+  stop.onclick = function () { kill("Stopped"); };
+  rst.onclick = function () { ta.value = start; out.innerHTML = ""; st.textContent = ""; };
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { e.preventDefault(); var s = ta.selectionStart; ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 4; }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (!run.disabled) go(); }
+  });
+})();
+
   </script>
 </body>
 </html>

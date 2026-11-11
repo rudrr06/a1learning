@@ -79,6 +79,8 @@
 .frame2{background:rgba(244,237,224,.1);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem}
 .frame2.top{background:rgba(255,107,91,.4)}
 .life{margin-top:10px;padding:8px 12px;border-radius:10px;background:rgba(233,196,106,.16);font-size:.84rem}
+#pyCode{width:100%;box-sizing:border-box;background:#101B33;color:#E8EDF7;border:0;border-radius:12px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.55;resize:vertical;tab-size:4;outline:none}#pyCode:focus{box-shadow:0 0 0 3px rgba(255,107,91,.5)}
+.pystatus{font-size:.8rem;opacity:.75;margin:8px 0 6px;min-height:1.2em}#pyOut{min-height:48px}#pyOut:empty::before{content:'Output appears here';opacity:.4}
 @media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
 </style>
 </head>
@@ -109,6 +111,24 @@
         <div class="dots" id="dots"></div>
         <span class="step-count" id="stepCount"></span>
       </div>
+    </div>
+
+
+    <div class="panel try">
+      <h2>🐍 Try it yourself</h2>
+      <p class="hint">Real Python runs right here in your browser. Try: write a function cube(x), or a function that adds two numbers. Press Ctrl+Enter to run.</p>
+      <textarea id="pyCode" spellcheck="false" rows="5">def square(x):
+    return x * x
+
+print(square(4))</textarea>
+      <div class="sim-controls" style="margin-top:10px">
+        <button class="btn-main" id="pyRun">▶ Run code</button>
+        <button class="btn-ghost" id="pyStop" style="display:none">⏹ Stop</button>
+        <button class="btn-ghost" id="pyReset">Reset code</button>
+      </div>
+      <div class="pystatus" id="pyStatus"></div>
+      <div class="console" id="pyOut" aria-live="polite"></div>
+      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB), then runs are instant. <code>input()</code> is not supported here.</p>
     </div>
 
     <div class="panel">
@@ -419,6 +439,66 @@ function createCode(cfg) {
 
 createCode({"lines":["<span class=\"k\">def<\/span> square(x):","    <span class=\"k\">return<\/span> x * x","","<span class=\"k\">def<\/span> add_squares(a, b):","    <span class=\"k\">return<\/span> square(a) + square(b)","","result = add_squares(2, 3)","<span class=\"k\">print<\/span>(result)"],"title":"Output","steps":[{"msg":"A <b>function<\/b> is a named, reusable recipe. We will compute <b>2² + 3²<\/b> using two functions.","p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">main (the main program)<\/div><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"<b>def<\/b> only <i>teaches<\/i> Python the recipe. Nothing runs yet. Python reads both definitions and remembers them.","line":0,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">main<\/div><\/div><div class=\"mk\">square and add_squares are now known<\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"The main program <b>calls<\/b> add_squares(2, 3). Python jumps into it and creates a new box on the <b>call stack<\/b> with a = 2 and b = 3.","line":6,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">add_squares(a=2, b=3)<\/div><div class=\"frame2 \">main<\/div><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"Inside, it needs <b>square(a)<\/b>. It must pause here and call <b>square(2)<\/b>. Another box goes on top.","line":4,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">square(x=2)<\/div><div class=\"frame2 \">add_squares(a=2, b=3) ⏸ waiting<\/div><div class=\"frame2 \">main<\/div><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"<b>return x * x<\/b> gives back 2 × 2 = <b>4<\/b>. The square box is removed (popped) from the stack.","line":1,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">add_squares(a=2, b=3)<\/div><div class=\"frame2 \">main<\/div><\/div><div class=\"mk\">square(2) returned <b>4<\/b><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"Next it needs <b>square(b)<\/b>, so square is called again with x = 3.","line":4,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">square(x=3)<\/div><div class=\"frame2 \">add_squares(a=2, b=3) ⏸ waiting<\/div><div class=\"frame2 \">main<\/div><\/div><div class=\"mk\">Remembered: first answer = 4<\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"It returns 3 × 3 = <b>9<\/b> and pops off the stack.","line":1,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">add_squares(a=2, b=3)<\/div><div class=\"frame2 \">main<\/div><\/div><div class=\"mk\">square(3) returned <b>9<\/b><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"add_squares now has both answers: 4 + 9 = <b>13<\/b>, and returns it. Its box pops off.","line":4,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">main<\/div><\/div><div class=\"mk\">add_squares returned <b>13<\/b><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"The returned 13 is stored in the variable <code>result<\/code>.","line":6,"p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">main  (result = 13)<\/div><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"},{"msg":"Finally, print shows it.","line":7,"out":"13","p":"<div class=\"sp-title\">Call stack (top = running now)<\/div><div class=\"stack\"><div class=\"frame2 top\">main  (result = 13)<\/div><\/div><div class=\"life\">🏠 In real life: asking a friend to do a small job, waiting for the answer, then carrying on.<\/div>"}]});
 initQuiz([{"q":"What does def do?","o":["Defines a function without running it","Runs a function","Deletes a function","Prints a value"],"a":0,"e":"It only saves the recipe."},{"q":"What does return do?","o":["Sends a value back and ends the function","Prints the value","Starts a loop","Imports a file"],"a":0,"e":"The caller receives the value."},{"q":"What is square(3)?","o":["9","6","3","12"],"a":0,"e":"3 × 3 = 9."},{"q":"What is the call stack?","o":["A list of active function calls","A type of loop","A file folder","A password list"],"a":0,"e":"It tracks where to return to."},{"q":"Which call is on top while square(2) runs?","o":["square(x=2)","main","add_squares","print"],"a":0,"e":"The newest call is on top."},{"q":"Final value of add_squares(2, 3)?","o":["13","5","36","25"],"a":0,"e":"4 + 9 = 13."},{"q":"Why use functions?","o":["To reuse code and keep it organised","To make the code slower","To hide errors","Because Python needs them everywhere"],"a":0,"e":"Write once, use many times."},{"q":"What happens to a function's box when it returns?","o":["It is removed from the stack","It stays forever","It moves to the bottom","It is printed"],"a":0,"e":"Popped off."},{"q":"a and b in add_squares(a, b) are called…","o":["Parameters","Comments","Loops","Modules"],"a":0,"e":"They receive the values you pass in."},{"q":"What is a stack overflow?","o":["Too many nested calls fill the stack","A full hard disk","A bad password","A slow network"],"a":0,"e":"Endless recursion can cause it."}]);
+/* a1learning – "Try it yourself": runs real Python in the browser (Pyodide, in a Web Worker so it can be stopped) */
+(function () {
+  var BASE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+  function workerMain(BASE) {
+    var py = null;
+    importScripts(BASE + "pyodide.js");
+    onmessage = async function (e) {
+      try {
+        if (!py) {
+          postMessage({ t: "status", m: "Loading Python (first time only, about 10 MB)…" });
+          py = await loadPyodide({ indexURL: BASE });
+          py.setStdout({ batched: function (s) { postMessage({ t: "out", m: s }); } });
+          py.setStderr({ batched: function (s) { postMessage({ t: "err", m: s }); } });
+        }
+        postMessage({ t: "status", m: "Running…" });
+        var g = py.globals.get("dict")();
+        try { await py.runPythonAsync(e.data.code, { globals: g }); } finally { g.destroy(); }
+        postMessage({ t: "done" });
+      } catch (err) { postMessage({ t: "error", m: String(err && err.message || err) }); }
+    };
+  }
+  var ta = document.getElementById("pyCode"), out = document.getElementById("pyOut"), st = document.getElementById("pyStatus");
+  var run = document.getElementById("pyRun"), stop = document.getElementById("pyStop"), rst = document.getElementById("pyReset");
+  var start = ta.value, w = null, timer = null;
+  function line(txt, cls) { var d = document.createElement("div"); if (cls) d.className = cls; d.textContent = txt; out.appendChild(d); }
+  function idle(msg) { clearTimeout(timer); run.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
+  function kill(msg) { if (w) { w.terminate(); w = null; } idle(msg); }
+  function make() {
+    var src = "(" + workerMain.toString() + ")(" + JSON.stringify(BASE) + ")";
+    w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = function (e) {
+      var d = e.data;
+      if (d.t === "out") line(d.m);
+      else if (d.t === "err") line(d.m, "er");
+      else if (d.t === "status") {
+        st.textContent = d.m;
+        if (d.m === "Running…") { clearTimeout(timer); timer = setTimeout(function () { kill("Stopped: it ran longer than 10 seconds. Is there an endless loop?"); line("⏹ Stopped after 10 seconds", "er"); }, 10000); }
+      } else if (d.t === "done") idle("Finished ✓");
+      else if (d.t === "error") {
+        var m = d.m, k = m.indexOf('File "<exec>"');
+        line(k >= 0 ? "Traceback (most recent call last):\n  " + m.slice(k) : m, "er");
+        idle("Finished with an error");
+      }
+    };
+    w.onerror = function () { line("Could not load Python. Check your internet connection and try again.", "er"); kill("Failed to load"); };
+  }
+  function go() {
+    out.innerHTML = ""; run.disabled = true; stop.style.display = "inline-block";
+    st.textContent = "Starting…";
+    try { if (!w) make(); w.postMessage({ code: ta.value }); } catch (e) { line("This browser cannot run the Python box.", "er"); idle("Not supported"); }
+  }
+  run.onclick = go;
+  stop.onclick = function () { kill("Stopped"); };
+  rst.onclick = function () { ta.value = start; out.innerHTML = ""; st.textContent = ""; };
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { e.preventDefault(); var s = ta.selectionStart; ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 4; }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (!run.disabled) go(); }
+  });
+})();
+
   </script>
 </body>
 </html>

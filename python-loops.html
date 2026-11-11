@@ -79,6 +79,8 @@
 .frame2{background:rgba(244,237,224,.1);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem}
 .frame2.top{background:rgba(255,107,91,.4)}
 .life{margin-top:10px;padding:8px 12px;border-radius:10px;background:rgba(233,196,106,.16);font-size:.84rem}
+#pyCode{width:100%;box-sizing:border-box;background:#101B33;color:#E8EDF7;border:0;border-radius:12px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.55;resize:vertical;tab-size:4;outline:none}#pyCode:focus{box-shadow:0 0 0 3px rgba(255,107,91,.5)}
+.pystatus{font-size:.8rem;opacity:.75;margin:8px 0 6px;min-height:1.2em}#pyOut{min-height:48px}#pyOut:empty::before{content:'Output appears here';opacity:.4}
 @media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
 </style>
 </head>
@@ -109,6 +111,25 @@
         <div class="dots" id="dots"></div>
         <span class="step-count" id="stepCount"></span>
       </div>
+    </div>
+
+
+    <div class="panel try">
+      <h2>🐍 Try it yourself</h2>
+      <p class="hint">Real Python runs right here in your browser. Try: change 4 to 6, add more numbers to the list, or print n inside the loop. Press Ctrl+Enter to run.</p>
+      <textarea id="pyCode" spellcheck="false" rows="6">total = 0
+for n in [3, 5, 8]:
+    if n > 4:
+        total = total + n
+print(total)</textarea>
+      <div class="sim-controls" style="margin-top:10px">
+        <button class="btn-main" id="pyRun">▶ Run code</button>
+        <button class="btn-ghost" id="pyStop" style="display:none">⏹ Stop</button>
+        <button class="btn-ghost" id="pyReset">Reset code</button>
+      </div>
+      <div class="pystatus" id="pyStatus"></div>
+      <div class="console" id="pyOut" aria-live="polite"></div>
+      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB), then runs are instant. <code>input()</code> is not supported here.</p>
     </div>
 
     <div class="panel">
@@ -421,6 +442,66 @@ function createCode(cfg) {
 
 createCode({"lines":["total = 0","<span class=\"k\">for<\/span> n <span class=\"k\">in<\/span> [3, 5, 8]:","    <span class=\"k\">if<\/span> n &gt; 4:","        total = total + n","<span class=\"k\">print<\/span>(total)"],"title":"Output","steps":[{"msg":"Goal: add up only the numbers <b>bigger than 4<\/b> from the list [3, 5, 8]. We need a <b>loop<\/b> (repeat for each item) and an <b>if<\/b> (decide).","p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"Start the running total at <b>0<\/b>.","line":0,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">0<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"The <b>for<\/b> loop takes the items one by one. First round: <b>n = 3<\/b>.","line":1,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">0<\/div><\/div><div class=\"vbox ch\"><div class=\"vn\">n<\/div><div class=\"vv\">3<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"<b>if<\/b> asks a yes/no question. Is 3 &gt; 4? <b>False<\/b>, so the indented lines are skipped.","line":2,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">0<\/div><\/div><div class=\"vbox \"><div class=\"vn\">n<\/div><div class=\"vv\">3<\/div><\/div><\/div><div class=\"mk\">3 &gt; 4 → <b>False<\/b> → skip<\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"Next round of the loop: <b>n = 5<\/b>.","line":1,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">0<\/div><\/div><div class=\"vbox ch\"><div class=\"vn\">n<\/div><div class=\"vv\">5<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"Is 5 &gt; 4? <b>True<\/b>, so the indented line runs.","line":2,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">0<\/div><\/div><div class=\"vbox \"><div class=\"vn\">n<\/div><div class=\"vv\">5<\/div><\/div><\/div><div class=\"mk\">5 &gt; 4 → <b>True<\/b> → run<\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"total = 0 + 5 = <b>5<\/b>.","line":3,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox ch\"><div class=\"vn\">total<\/div><div class=\"vv\">5<\/div><\/div><div class=\"vbox \"><div class=\"vn\">n<\/div><div class=\"vv\">5<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"Last round: <b>n = 8<\/b>.","line":1,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">5<\/div><\/div><div class=\"vbox ch\"><div class=\"vn\">n<\/div><div class=\"vv\">8<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"Is 8 &gt; 4? <b>True<\/b>.","line":2,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">5<\/div><\/div><div class=\"vbox \"><div class=\"vn\">n<\/div><div class=\"vv\">8<\/div><\/div><\/div><div class=\"mk\">8 &gt; 4 → <b>True<\/b> → run<\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"total = 5 + 8 = <b>13<\/b>.","line":3,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox ch\"><div class=\"vn\">total<\/div><div class=\"vv\">13<\/div><\/div><div class=\"vbox \"><div class=\"vn\">n<\/div><div class=\"vv\">8<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"The list is finished, so the loop ends and Python moves to the next unindented line.","line":4,"p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">13<\/div><\/div><\/div><div class=\"mk\">Loop finished<\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"},{"msg":"The result is printed.","line":4,"out":"13","p":"<div class=\"sp-title\">Memory<\/div><div class=\"vars\"><div class=\"vbox \"><div class=\"vn\">total<\/div><div class=\"vv\">13<\/div><\/div><\/div><div class=\"life\">🏠 In real life: adding up only the expensive items on a shopping bill.<\/div>"}]});
 initQuiz([{"q":"What does a for loop do?","o":["Repeats code for each item","Stops the program","Defines a function","Prints once"],"a":0,"e":"It visits each item in turn."},{"q":"What does if do?","o":["Runs code only when a condition is True","Repeats code","Deletes code","Names a variable"],"a":0,"e":"It makes decisions."},{"q":"What is 3 > 4?","o":["False","True","3","4"],"a":0,"e":"3 is not bigger than 4."},{"q":"In the example, what is total at the end?","o":["13","8","16","5"],"a":0,"e":"5 + 8 = 13."},{"q":"What marks the code inside a loop or if?","o":["Indentation (spaces)","Curly braces","Semicolons","Capital letters"],"a":0,"e":"Python uses indentation."},{"q":"Why was 3 skipped?","o":["The if condition was False","The list ended","It is odd","It is negative"],"a":0,"e":"3 > 4 is False."},{"q":"What does total = total + n do?","o":["Adds n to the current total","Resets total","Prints n","Deletes n"],"a":0,"e":"The new total replaces the old."},{"q":"When does the loop end?","o":["When there are no items left","After 3 rounds always","When n is 5","Never"],"a":0,"e":"It stops when the list is finished."},{"q":"Which type of value does \"if\" check?","o":["A boolean (True/False)","Only strings","Only floats","Only lists"],"a":0,"e":"Conditions evaluate to True or False."},{"q":"What would happen if the if line were removed?","o":["All numbers would be added (16)","Nothing","An error only","Only 3 is added"],"a":0,"e":"3 + 5 + 8 = 16."}]);
+/* a1learning – "Try it yourself": runs real Python in the browser (Pyodide, in a Web Worker so it can be stopped) */
+(function () {
+  var BASE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+  function workerMain(BASE) {
+    var py = null;
+    importScripts(BASE + "pyodide.js");
+    onmessage = async function (e) {
+      try {
+        if (!py) {
+          postMessage({ t: "status", m: "Loading Python (first time only, about 10 MB)…" });
+          py = await loadPyodide({ indexURL: BASE });
+          py.setStdout({ batched: function (s) { postMessage({ t: "out", m: s }); } });
+          py.setStderr({ batched: function (s) { postMessage({ t: "err", m: s }); } });
+        }
+        postMessage({ t: "status", m: "Running…" });
+        var g = py.globals.get("dict")();
+        try { await py.runPythonAsync(e.data.code, { globals: g }); } finally { g.destroy(); }
+        postMessage({ t: "done" });
+      } catch (err) { postMessage({ t: "error", m: String(err && err.message || err) }); }
+    };
+  }
+  var ta = document.getElementById("pyCode"), out = document.getElementById("pyOut"), st = document.getElementById("pyStatus");
+  var run = document.getElementById("pyRun"), stop = document.getElementById("pyStop"), rst = document.getElementById("pyReset");
+  var start = ta.value, w = null, timer = null;
+  function line(txt, cls) { var d = document.createElement("div"); if (cls) d.className = cls; d.textContent = txt; out.appendChild(d); }
+  function idle(msg) { clearTimeout(timer); run.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
+  function kill(msg) { if (w) { w.terminate(); w = null; } idle(msg); }
+  function make() {
+    var src = "(" + workerMain.toString() + ")(" + JSON.stringify(BASE) + ")";
+    w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = function (e) {
+      var d = e.data;
+      if (d.t === "out") line(d.m);
+      else if (d.t === "err") line(d.m, "er");
+      else if (d.t === "status") {
+        st.textContent = d.m;
+        if (d.m === "Running…") { clearTimeout(timer); timer = setTimeout(function () { kill("Stopped: it ran longer than 10 seconds. Is there an endless loop?"); line("⏹ Stopped after 10 seconds", "er"); }, 10000); }
+      } else if (d.t === "done") idle("Finished ✓");
+      else if (d.t === "error") {
+        var m = d.m, k = m.indexOf('File "<exec>"');
+        line(k >= 0 ? "Traceback (most recent call last):\n  " + m.slice(k) : m, "er");
+        idle("Finished with an error");
+      }
+    };
+    w.onerror = function () { line("Could not load Python. Check your internet connection and try again.", "er"); kill("Failed to load"); };
+  }
+  function go() {
+    out.innerHTML = ""; run.disabled = true; stop.style.display = "inline-block";
+    st.textContent = "Starting…";
+    try { if (!w) make(); w.postMessage({ code: ta.value }); } catch (e) { line("This browser cannot run the Python box.", "er"); idle("Not supported"); }
+  }
+  run.onclick = go;
+  stop.onclick = function () { kill("Stopped"); };
+  rst.onclick = function () { ta.value = start; out.innerHTML = ""; st.textContent = ""; };
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { e.preventDefault(); var s = ta.selectionStart; ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 4; }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (!run.disabled) go(); }
+  });
+})();
+
   </script>
 </body>
 </html>
