@@ -6,6 +6,49 @@
   <meta name="theme-color" content="#0b1830">
   <title>a1learning – Learn by seeing it happen</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+.hero{padding:44px 20px 34px!important;min-height:0!important;position:relative;overflow:hidden;isolation:isolate;
+ background:radial-gradient(60% 70% at 88% -5%,rgba(255,138,112,.55),transparent 62%),radial-gradient(75% 85% at 8% 115%,rgba(244,237,224,.6),transparent 66%),radial-gradient(40% 50% at 50% 55%,rgba(255,200,140,.12),transparent 70%),linear-gradient(160deg,#22376A,#14213D 62%,#2B3B66)!important}
+.hero>*{position:relative;z-index:2}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(44px);z-index:0;pointer-events:none;animation:drift 14s ease-in-out infinite alternate}
+.hero:before{width:240px;height:240px;right:-60px;top:-70px;background:rgba(255,120,95,.5)}
+.hero:after{width:260px;height:260px;left:-80px;bottom:-110px;background:rgba(244,225,190,.45);animation-delay:-6s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,18px) scale(1.15)}}
+.fl{position:absolute!important;z-index:1!important;font-style:normal;font-size:2rem;opacity:.5;filter:saturate(1.1) drop-shadow(0 6px 10px rgba(0,0,0,.25));animation:flo 7s ease-in-out infinite alternate;pointer-events:none}
+.f1{left:5%;top:18%}.f2{right:6%;top:14%;animation-delay:-2s}.f3{left:8%;bottom:22%;animation-delay:-4s}.f4{right:7%;bottom:20%;animation-delay:-1s}
+@keyframes flo{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-12px) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.hero:before,.hero:after,.fl{animation:none}}
+@media(max-width:560px){.chips2{display:none!important}.hero{padding:30px 22px 50px!important}.fl{font-size:1.4rem!important;opacity:.5!important}.f1{left:6%;top:11%}.f2{right:6%;top:9%}.f3{left:7%;top:auto!important;bottom:8px;display:block!important}.f4{right:7%;top:auto!important;bottom:8px;display:block!important}.hero h1{font-size:2.1rem}.hero .stat{font-size:.88rem;margin-bottom:14px}.search{max-width:330px}.chips2{margin-top:12px;gap:6px}.chips2 a{padding:6px 12px;font-size:.8rem}.chips2 span{font-size:.7rem}.fl{font-size:1.5rem;opacity:.4}.f3,.f4{display:none}}
+.hero h1{font-size:2.4rem;margin-bottom:10px;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;background:linear-gradient(100deg,#FF7A63,#FFC48A);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .stat{margin:0 auto 16px;font-size:.98rem;opacity:.85}
+.hero .stat b{color:#FF9A8B}
+.search{position:relative;max-width:440px;margin:0 auto}
+.search input{width:100%;box-sizing:border-box;border:0;outline:0;border-radius:99px;padding:11px 18px 11px 42px;font-size:.95rem;color:#F4EDE0;background:rgba(244,237,224,.15);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.15),inset 0 0 0 0 transparent}
+.search input::placeholder{color:rgba(244,237,224,.7)}
+.search input:focus{background:rgba(244,237,224,.24);box-shadow:0 0 0 3px rgba(255,138,112,.45),0 8px 24px rgba(0,0,0,.2)}
+.search:before{content:"🔎";position:absolute;left:16px;font-size:.9rem;opacity:.85;top:50%;transform:translateY(-50%);font-size:1rem;z-index:1}
+.results{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:20;background:#F4EDE0;border-radius:18px;box-shadow:0 16px 40px rgba(0,0,0,.35);overflow:hidden;text-align:left}
+.results a{display:flex;gap:10px;align-items:center;padding:11px 16px;color:#14213D;text-decoration:none;font-size:.95rem}
+.results a:hover,.results a:focus{background:#EADFC8}
+.results small{margin-left:auto;opacity:.6;font-size:.75rem}
+.results .none{padding:14px 16px;color:#14213D;opacity:.7}
+.chips2{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:620px;margin:16px auto 0}
+.chips2 span{width:100%;font-size:.78rem;opacity:.7;letter-spacing:.06em;text-transform:uppercase}
+.chips2 a{background:rgba(20,33,61,.5);backdrop-filter:blur(6px);color:#F4EDE0;padding:7px 14px;border-radius:99px;font-size:.85rem;text-decoration:none}
+.chips2 a:hover{background:rgba(255,107,91,.7)}
+#topics{padding-top:8px;margin-top:22px}
+.chips2 a{white-space:nowrap}
+#topics h2{display:none}
+.subject-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+.card.subject{padding:18px 16px!important;text-align:left}
+.card.subject .icon{font-size:2rem!important;margin-bottom:4px!important}
+.card.subject h3{font-size:1.15rem!important;margin-bottom:2px!important}
+.card.subject p{display:none}
+.card.subject .count{margin-top:6px}
+.card.subject .go{display:none!important}
+@media(min-width:900px){.hero{padding:64px 20px 48px!important}.hero h1{font-size:3.2rem}.fl{font-size:2.8rem}.subject-grid{grid-template-columns:repeat(4,1fr)!important;gap:18px!important}.card.subject p{display:block;font-size:.9rem}.card.subject .go{display:block!important}.hero h1{font-size:2.5rem}}
+</style>
 </head>
 <body>
 
@@ -15,12 +58,19 @@
   </header>
 
   <div class="hero">
-    <h1>Learn by <em>seeing</em> it happen</h1>
-    <p>Interactive simulations that make hard topics easy. Click, watch, understand.</p>
-    <div class="how">
-      <span>👀 Watch it</span>
-      <span>🧠 Understand it</span>
-      <span>✅ Practice it</span>
+    <i class="fl f1" aria-hidden="true">🌐</i><i class="fl f2" aria-hidden="true">🛡️</i><i class="fl f3" aria-hidden="true">🐧</i><i class="fl f4" aria-hidden="true">🐍</i>
+    <h1>Learn by <em>simulation</em></h1>
+    <p class="stat"><b>44</b> interactive topics · free, no sign-up</p>
+    <div class="search">
+      <input id="q" type="search" placeholder="Search topics: DNS, XSS, loops…" autocomplete="off" aria-label="Search topics">
+      <div class="results" id="res" hidden></div>
+    </div>
+    <div class="chips2"><span>Start here</span>
+      <a href="tcp-handshake.html">🔗 TCP Handshake</a>
+      <a href="sql-injection.html">💉 SQL Injection</a>
+      <a href="linux-permissions.html">🔐 chmod</a>
+      <a href="python-loops.html">🔁 Python loops</a>
+      <a href="xss.html">📜 XSS</a>
     </div>
   </div>
 
@@ -56,7 +106,7 @@
           <div class="icon">🐍</div>
           <h3>Python</h3>
           <p>See variables, loops and functions run one line at a time.</p>
-          <span class="count">14 topics</span>
+          <span class="count">20 topics</span>
           <span class="go" style="display:block">Enter →</span>
         </a>
       </div>
@@ -65,5 +115,19 @@
 
   <footer>© a1learning</footer>
 
+  <script>
+  var TOPICS = [{"t":"The OSI Model","u":"osi-model.html","s":"Networking","i":"🧱"},{"t":"Switching & the MAC Address Table","u":"switching-mac.html","s":"Networking","i":"🔀"},{"t":"VLANs: Splitting One Switch Into Many Networks","u":"vlans.html","s":"Networking","i":"🏷️"},{"t":"IP Addresses & Subnetting","u":"ip-subnetting.html","s":"Networking","i":"🧮"},{"t":"DHCP","u":"dhcp.html","s":"Networking","i":"🏷️"},{"t":"ARP","u":"arp.html","s":"Networking","i":"📇"},{"t":"DNS","u":"dns.html","s":"Networking","i":"📖"},{"t":"NAT","u":"nat.html","s":"Networking","i":"🔁"},{"t":"Routing & Traceroute","u":"routing-traceroute.html","s":"Networking","i":"🗺️"},{"t":"TCP Three-Way Handshake","u":"tcp-handshake.html","s":"Networking","i":"🔗"},{"t":"TCP vs UDP","u":"tcp-vs-udp.html","s":"Networking","i":"⚖️"},{"t":"HTTP Request & Response","u":"http.html","s":"Networking","i":"📨"},{"t":"HTTPS & the TLS Handshake","u":"https-tls.html","s":"Networking","i":"🔒"},{"t":"Firewalls & Rule Order","u":"firewalls.html","s":"Networking","i":"🧱"},{"t":"SQL Injection","u":"sql-injection.html","s":"Cybersecurity","i":"💉"},{"t":"Phishing Attack Chain","u":"phishing.html","s":"Cybersecurity","i":"🎣"},{"t":"Buffer Overflow","u":"buffer-overflow.html","s":"Cybersecurity","i":"💥"},{"t":"Password Hashing","u":"password-hashing.html","s":"Cybersecurity","i":"🔑"},{"t":"Cross-Site Scripting (XSS)","u":"xss.html","s":"Cybersecurity","i":"📜"},{"t":"CSRF: Forged Requests","u":"csrf.html","s":"Cybersecurity","i":"🎭"},{"t":"IDOR: Broken Access Control","u":"idor.html","s":"Cybersecurity","i":"🔓"},{"t":"Finding Your Way Around Linux","u":"linux-filesystem.html","s":"Linux","i":"🗂️"},{"t":"File Permissions (chmod)","u":"linux-permissions.html","s":"Linux","i":"🔐"},{"t":"Users, Root and sudo","u":"linux-sudo.html","s":"Linux","i":"👑"},{"t":"Variables & Data Types","u":"python-variables.html","s":"Python","i":"📦"},{"t":"Strings: Indexing & Slicing","u":"python-strings.html","s":"Python","i":"🔤"},{"t":"f-strings: Fill In the Blanks","u":"python-fstrings.html","s":"Python","i":"✉️"},{"t":"Loops & If Conditions","u":"python-loops.html","s":"Python","i":"🔁"},{"t":"While Loops","u":"python-while.html","s":"Python","i":"⏳"},{"t":"Lists & Indexing","u":"python-lists.html","s":"Python","i":"📋"},{"t":"Sorting Lists","u":"python-sorting.html","s":"Python","i":"📶"},{"t":"Tuples & Unpacking","u":"python-tuples.html","s":"Python","i":"🔒"},{"t":"Dictionaries (Key → Value)","u":"python-dictionaries.html","s":"Python","i":"📖"},{"t":"Sets: Unique Items Only","u":"python-sets.html","s":"Python","i":"🎒"},{"t":"JSON: How Programs Share Data","u":"python-json.html","s":"Python","i":"📦"},{"t":"List Comprehensions","u":"python-comprehensions.html","s":"Python","i":"⚡"},{"t":"Functions & the Call Stack","u":"python-functions.html","s":"Python","i":"🧩"},{"t":"Recursion: A Function Calling Itself","u":"python-recursion.html","s":"Python","i":"🪆"},{"t":"Handling Errors (try / except)","u":"python-errors.html","s":"Python","i":"🛟"},{"t":"Modules & import","u":"python-modules.html","s":"Python","i":"🧰"},{"t":"Reading & Writing Files","u":"python-files.html","s":"Python","i":"📄"},{"t":"Reading a Log Line","u":"python-logs.html","s":"Python","i":"🕵️"},{"t":"Hashing with hashlib","u":"python-hashlib.html","s":"Python","i":"🧬"},{"t":"Classes & Objects","u":"python-classes.html","s":"Python","i":"🏗️"}];
+  var q = document.getElementById("q"), res = document.getElementById("res");
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  q.addEventListener("input", function () {
+    var v = q.value.trim().toLowerCase();
+    if (!v) { res.hidden = true; return; }
+    var hits = TOPICS.filter(function (t) { return (t.t + " " + t.s).toLowerCase().indexOf(v) > -1; }).slice(0, 7);
+    res.innerHTML = hits.length ? hits.map(function (t) { return '<a href="' + t.u + '">' + t.i + " " + esc(t.t) + "<small>" + t.s + "</small></a>"; }).join("") : '<div class="none">No topic found. Try another word.</div>';
+    res.hidden = false;
+  });
+  q.addEventListener("keydown", function (e) { if (e.key === "Enter") { var a = res.querySelector("a"); if (a) location.href = a.getAttribute("href"); } if (e.key === "Escape") { res.hidden = true; } });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".search")) res.hidden = true; });
+  </script>
 </body>
 </html>

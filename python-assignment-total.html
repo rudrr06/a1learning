@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1830">
+  <title>Add Them Up (Python assignment) – a1learning</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+.gstage{position:relative;height:var(--gh);margin:8px 0 14px}
+.glinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.glink,.glink-bg{vector-effect:non-scaling-stroke;fill:none;stroke-linecap:round}
+.glink-bg{stroke:rgba(20,33,61,.10);stroke-width:9px}
+.glink{stroke:rgba(20,33,61,.55);stroke-width:2.5px}
+.glink.hot{stroke:#FF6B5B}.glink.good{stroke:#2E9E6B}.glink.bad{stroke:#C8433A}
+.glink.dim{stroke:rgba(20,33,61,.18)}.glink.down{stroke:rgba(200,67,58,.5);stroke-dasharray:3 7}
+.glink.tunnel{stroke:#B8872B;stroke-dasharray:8 6}
+.glabel{position:absolute;transform:translate(-50%,-50%);font-size:.68rem;font-weight:700;color:#14213D;background:rgba(244,237,224,.92);padding:1px 7px;border-radius:99px;pointer-events:none}
+.glabel:empty{display:none}
+.gnode{position:absolute;transform:translate(-50%,-50%);width:96px;text-align:center;padding:8px 4px 7px;border-radius:16px;color:#F4EDE0;background:linear-gradient(160deg,#1B2D52,#14213D);box-shadow:0 6px 16px rgba(20,33,61,.28);transition:box-shadow .3s,opacity .3s,background .3s;z-index:2}
+.gi{font-size:1.6rem;line-height:1.1}.gl{font-size:.78rem;font-weight:700;margin-top:2px}
+.gs{font-size:.62rem;opacity:.7}.gs:empty{display:none}
+.gt{font-size:.64rem;font-weight:700;margin-top:3px;color:#FFD9D2}.gt:empty{display:none}
+.gnode.hot{box-shadow:0 0 0 3px rgba(255,107,91,.7),0 6px 18px rgba(255,107,91,.4)}
+.gnode.good{background:linear-gradient(160deg,#2E7F63,#1F5E48);box-shadow:0 0 0 3px rgba(46,158,107,.55)}
+.gnode.good .gt{color:#D8FFEA}
+.gnode.bad{background:linear-gradient(160deg,#A8372F,#7C2620);box-shadow:0 0 0 3px rgba(200,67,58,.6)}
+.gnode.dim{filter:grayscale(.9) brightness(1.5)}.gnode.down{filter:grayscale(.9) brightness(1.4)}
+.gnode.c1{background:linear-gradient(160deg,#2F7FA8,#1F5878)}
+.gnode.c2{background:linear-gradient(160deg,#8A5BB0,#5E3A80)}
+.gnode.c3{background:linear-gradient(160deg,#B8872B,#8A6218)}
+.gpkt{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:none;white-space:nowrap;padding:3px 9px;border-radius:99px;font-size:.7rem;font-weight:800;background:#FF6B5B;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.gpkt.good{background:#2E9E6B}.gpkt.bad{background:#C8433A}
+.spanel{background:linear-gradient(160deg,#1B2D52,#14213D);color:#F4EDE0;border-radius:16px;padding:14px 16px;margin-top:12px;font-size:.9rem;min-height:60px}
+.spanel.fade{animation:spf .4s}@keyframes spf{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+.sp-title{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:8px;font-weight:700}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{text-align:left;font-size:.7rem;opacity:.6;font-weight:700;padding:3px 8px}
+.tbl td{padding:6px 8px;background:rgba(244,237,224,.07)}
+.tbl tr+tr td{border-top:2px solid #14213D}
+.tbl tr.hl td{background:rgba(255,107,91,.32)}.tbl tr.ok td{background:rgba(46,158,107,.3)}
+.tbl tr.no td{background:rgba(200,67,58,.35)}.tbl tr.dim td{opacity:.45}
+.badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:.7rem;font-weight:800;background:rgba(244,237,224,.2)}
+.badge.ok{background:#2E9E6B;color:#fff}.badge.no{background:#C8433A;color:#fff}
+.badge.b1{background:#2F7FA8;color:#fff}.badge.b2{background:#8A5BB0;color:#fff}
+.term{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.7;background:rgba(0,0,0,.28);border-radius:10px;padding:10px 12px;overflow-x:auto}
+.term .g{color:#7EE0A8}.term .r{color:#FF9A8B}.term .y{color:#E9C46A}.term .d{opacity:.6}
+.mk{margin:8px 0 0;font-size:.82rem;opacity:.85}
+.cmt{background:rgba(244,237,224,.09);border-radius:10px;padding:7px 10px;margin-bottom:6px;font-size:.85rem;overflow-wrap:anywhere}
+.cmt.bad{background:rgba(200,67,58,.4)}
+.url{font-family:ui-monospace,Menlo,monospace;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:10px;font-size:.82rem;overflow-x:auto;margin-bottom:8px}
+.url .hot,.url b{color:#FFB3A8}
+.inv{background:rgba(244,237,224,.1);border-radius:10px;padding:10px 12px;line-height:1.6}.inv.bad{background:rgba(200,67,58,.4)}
+.frame{display:flex;gap:4px;flex-wrap:wrap}.frame span{background:rgba(244,237,224,.12);padding:7px 9px;border-radius:8px;font-size:.78rem}
+.frame span.hot{background:#FF6B5B;color:#fff;font-weight:700}
+@media(max-width:560px){.gstage{height:var(--ghm)}.gnode{width:74px;padding:6px 2px}.gi{font-size:1.25rem}.gl{font-size:.68rem}.gs,.gt{font-size:.56rem}.gpkt{font-size:.6rem;padding:2px 6px}.glabel{font-size:.58rem}.tbl{font-size:.74rem}.tbl td{padding:5px 5px}}
+
+.codebox{background:#101B33;border-radius:14px;padding:10px 0;margin:8px 0 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;overflow-x:auto}
+.cl{display:flex;gap:10px;padding:2px 14px;color:#DDE3F0;white-space:pre;border-radius:0}
+.cl .ln{opacity:.35;width:1.4em;text-align:right;flex:none}
+.cl.on{background:linear-gradient(90deg,rgba(255,107,91,.45),rgba(255,107,91,.08))}
+.cl .k{color:#FF9A8B}.cl .s{color:#E9C46A}.cl .n{color:#7EE0A8}.cl .c{opacity:.5}
+.console{background:#0B1326;color:#E8EDF7;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;line-height:1.6;max-height:230px;overflow:auto}
+.console .ch{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin-bottom:4px;font-family:inherit}
+.console .pr{color:#7EE0A8}.console .d{opacity:.5}.console .er{color:#FF9A8B}.console .ok{color:#7EE0A8}
+.cur{display:inline-block;width:8px;height:1em;background:#E8EDF7;vertical-align:text-bottom;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.pm{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px 8px;align-items:center;font-size:.85rem}
+.pm .h{font-size:.7rem;opacity:.6;font-weight:700;text-align:center}
+.pm i{font-style:normal;text-align:center;padding:5px 0;border-radius:8px;background:rgba(244,237,224,.08);opacity:.55;font-weight:700}
+.pm i.on{background:#2E9E6B;opacity:1;color:#fff}.pm i.bad{background:#C8433A;opacity:1;color:#fff}
+.pm .nm{text-align:center;font-weight:700}
+.tree{font-family:ui-monospace,Menlo,monospace;font-size:.84rem;line-height:1.65;white-space:pre;overflow-x:auto}
+.tree b{background:#FF6B5B;color:#fff;padding:0 7px;border-radius:6px}
+.vars{display:flex;gap:10px;flex-wrap:wrap}
+.vbox{background:rgba(244,237,224,.1);border-radius:12px;padding:8px 14px;text-align:center;min-width:86px}
+.vbox .vn{font-size:.72rem;opacity:.7}.vbox .vv{font-size:1.15rem;font-weight:800;margin:2px 0}.vbox .vt{font-size:.65rem;opacity:.55}
+.vbox.ch{background:rgba(255,107,91,.4);animation:spf .5s}
+.stack{display:flex;flex-direction:column;gap:6px}
+.frame2{background:rgba(244,237,224,.1);border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem}
+.frame2.top{background:rgba(255,107,91,.4)}
+.life{margin-top:10px;padding:8px 12px;border-radius:10px;background:rgba(233,196,106,.16);font-size:.84rem}
+#pyCode{width:100%;box-sizing:border-box;background:#101B33;color:#E8EDF7;border:0;border-radius:12px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;line-height:1.55;resize:vertical;tab-size:4;outline:none}#pyCode:focus{box-shadow:0 0 0 3px rgba(255,107,91,.5)}
+.pystatus{font-size:.8rem;opacity:.75;margin:8px 0 6px;min-height:1.2em}#pyOut{min-height:48px}#pyOut:empty::before{content:'Output appears here';opacity:.4}
+@media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
+
+.lvl{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.72rem;font-weight:800;margin-right:8px;background:rgba(46,158,107,.3);color:#14213D}
+.lvl.Medium{background:rgba(233,196,106,.5)}.lvl.Hard{background:rgba(255,107,91,.4)}
+.panel code{background:rgba(20,33,61,.12);padding:1px 6px;border-radius:6px;font-size:.9em}
+.panel ul{margin:6px 0 6px 20px}
+.pysum{margin:10px 0 6px;font-weight:700;min-height:1.2em}.pysum.good{color:#7EE0A8;font-size:1.05rem}.pysum.bad{color:#FF9A8B}
+.tests{list-style:none;padding:0;margin:8px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem}
+.tests li{padding:6px 10px;border-radius:8px;margin-bottom:4px;overflow-wrap:anywhere}
+.tests li.ok{background:rgba(46,158,107,.25)}.tests li.no{background:rgba(200,67,58,.25)}
+.hintrow{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.hintbox{background:rgba(255,107,91,.14);border-radius:12px;padding:10px 14px;margin:8px 0}
+.solbox pre{background:#101B33;color:#E8EDF7;padding:12px 14px;border-radius:12px;overflow-x:auto;font-size:.85rem}
+.done{color:#1F7A52;font-weight:800;margin-left:8px}
+button:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="logo">a1<span>learning</span></a>
+    <nav><a href="index.html#topics">Subjects</a></nav>
+  </header>
+
+  <main class="container">
+    <a class="back" href="python-practice.html">← Practice assignments</a>
+    <h1 class="page-title">Add Them Up <span class="done" id="doneTag" hidden>✓ Solved</span></h1>
+    <p class="page-sub"><span class="lvl Easy">Easy</span>Total a list with a loop (no sum() allowed).</p>
+
+    <div class="panel">
+      <h2>Your task</h2>
+      <p>Write <code>total(nums)</code> that returns the sum of all numbers in the list. Use a <b>loop</b>, not the built-in <code>sum()</code>.</p><p>Example: <code>total([1, 2, 3])</code> → <code>6</code>, and an empty list gives <code>0</code>.</p>
+      <p class="hint">Need a refresher? <a href="python-loops.html" style="color:inherit;text-decoration:underline">Open the lesson</a>.</p>
+    </div>
+
+    <div class="panel try">
+      <h2>🐍 Write your code</h2>
+      <p class="hint">Edit the code, press <b>Run</b> to see what it prints, or <b>Check my answer</b> to test it. Ctrl+Enter also checks.</p>
+      <textarea id="pyCode" spellcheck="false" rows="8">def total(nums):
+    pass
+</textarea>
+      <div class="sim-controls" style="margin-top:10px">
+        <button class="btn-main" id="pyCheck">✔ Check my answer</button>
+        <button class="btn-ghost" id="pyRun">▶ Run</button>
+        <button class="btn-ghost" id="pyStop" style="display:none">⏹ Stop</button>
+        <button class="btn-ghost" id="pyReset">Reset</button>
+      </div>
+      <div class="pystatus" id="pyStatus"></div>
+      <div class="console" id="pyOut" aria-live="polite"></div>
+      <div class="pysum" id="pySummary"></div>
+      <ul class="tests" id="pyTests"></ul>
+      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB). <code>input()</code> does not work here, so write functions that return values.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Stuck?</h2>
+      <p class="hint">Open the hints one at a time. Try after each one.</p>
+      <div class="hintrow">
+        <button class="btn-ghost hintbtn" >💡 Hint 1</button>
+        <button class="btn-ghost hintbtn" disabled>💡 Hint 2</button>
+        <button class="btn-ghost hintbtn" disabled>💡 Hint 3</button>
+      </div>
+      <div class="hintbox" id="hint0" hidden>Start with a variable <code>result = 0</code>.</div>
+      <div class="hintbox" id="hint1" hidden>Loop over the list and add each item: <code>result = result + n</code>.</div>
+      <div class="hintbox" id="hint2" hidden>Put <code>return result</code> after the loop, not inside it (indent it less).</div>
+      <div class="hintrow" style="margin-top:12px"><button class="btn-light" id="solBtn" disabled>Show solution (after your first Check)</button></div>
+      <div class="solbox" id="solBox" hidden><pre>def total(nums):
+    result = 0
+    for n in nums:
+        result = result + n
+    return result</pre><p class="hint">There are many correct answers. If yours passes the tests, it is right.</p></div>
+    </div>
+
+    <div class="panel">
+      <p style="margin:0"><a class="btn-main" style="display:inline-block;text-decoration:none" href="python-assignment-vowels.html">Next: Count the Vowels →</a></p>
+    </div>
+  </main>
+
+  <footer>© a1learning</footer>
+
+  <script>
+window.ASG_ID="total";window.ASG_LABELS=["total([1, 2, 3]) → 6","total([]) → 0","total([5]) → 5","total([10, -4, 2]) → 8"];window.ASG_TESTS=[{"call":"total([1, 2, 3])","exp":6,"hidden":false},{"call":"total([])","exp":0,"hidden":false},{"call":"total([5])","exp":5,"hidden":false},{"call":"total([10, -4, 2])","exp":8,"hidden":true}];window.ASG_HARNESS="import json, io, traceback, contextlib\n\ndef __a1check(code, tests_json):\n    tests = json.loads(tests_json)\n    g = {\"__name__\": \"__main__\"}\n    buf = io.StringIO()\n    out = {\"stdout\": \"\", \"error\": None, \"results\": []}\n    try:\n        with contextlib.redirect_stdout(buf):\n            exec(compile(code, \"<exec>\", \"exec\"), g)\n    except BaseException as e:\n        line = None\n        for fr in traceback.extract_tb(e.__traceback__):\n            if fr.filename == \"<exec>\":\n                line = fr.lineno\n        if isinstance(e, SyntaxError):\n            line = e.lineno\n        msg = e.msg if isinstance(e, SyntaxError) else str(e)\n        out[\"error\"] = ((\"Line %s: \" % line) if line else \"\") + type(e).__name__ + \": \" + msg\n        out[\"stdout\"] = buf.getvalue()\n        return json.dumps(out)\n    out[\"stdout\"] = buf.getvalue()\n    for t in tests:\n        r = {\"ok\": False, \"got\": \"\"}\n        try:\n            b2 = io.StringIO()\n            with contextlib.redirect_stdout(b2):\n                got = eval(t[\"call\"], g)\n            exp = t[\"exp\"]\n            num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)\n            r[\"ok\"] = got == exp and (type(got) == type(exp) or (num(got) and num(exp)))\n            r[\"got\"] = repr(got)\n        except BaseException as e:\n            r[\"got\"] = type(e).__name__ + \": \" + str(e)\n        out[\"results\"].append(r)\n    return json.dumps(out)\n";
+/* a1learning – assignment runner: runs the student's Python in the browser and checks it against tests */
+(function () {
+  var BASE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+  function workerMain(BASE, HARNESS) {
+    var py = null;
+    importScripts(BASE + "pyodide.js");
+    onmessage = async function (e) {
+      try {
+        if (!py) {
+          postMessage({ t: "status", m: "Loading Python (first time only, about 10 MB)…" });
+          py = await loadPyodide({ indexURL: BASE });
+          py.setStdout({ batched: function (s) { postMessage({ t: "out", m: s }); } });
+          py.setStderr({ batched: function (s) { postMessage({ t: "err", m: s }); } });
+          py.runPython(HARNESS);
+        }
+        postMessage({ t: "status", m: "Running…" });
+        if (e.data.k === "check") {
+          var r = py.globals.get("__a1check")(e.data.code, e.data.tests);
+          postMessage({ t: "result", m: r });
+        } else {
+          var g = py.globals.get("dict")();
+          try { await py.runPythonAsync(e.data.code, { globals: g }); } finally { g.destroy(); }
+          postMessage({ t: "done" });
+        }
+      } catch (err) { postMessage({ t: "error", m: String(err && err.message || err) }); }
+    };
+  }
+  var $ = function (id) { return document.getElementById(id); };
+  var ta = $("pyCode"), out = $("pyOut"), st = $("pyStatus"), tl = $("pyTests"), sum = $("pySummary");
+  var run = $("pyRun"), chk = $("pyCheck"), stop = $("pyStop"), rst = $("pyReset");
+  var start = ta.value, w = null, timer = null, tries = 0, solved = false, mode = "run";
+  var ID = window.ASG_ID, LABELS = window.ASG_LABELS, TESTS = window.ASG_TESTS, HARNESS = window.ASG_HARNESS;
+  function line(t, c) { var d = document.createElement("div"); if (c) d.className = c; d.textContent = t; out.appendChild(d); }
+  function idle(msg) { clearTimeout(timer); run.disabled = chk.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
+  function kill(msg) { if (w) { w.terminate(); w = null; } idle(msg); }
+  function save() { try { var a = JSON.parse(localStorage.getItem("a1_solved") || "[]"); if (a.indexOf(ID) < 0) { a.push(ID); localStorage.setItem("a1_solved", JSON.stringify(a)); } } catch (e) {} }
+  function unlockSolution() { var b = $("solBtn"); if (b) { b.disabled = false; b.textContent = solved ? "Compare with our solution" : "Show solution"; } }
+  function showResult(raw) {
+    var r = JSON.parse(raw); tl.innerHTML = ""; sum.className = "pysum"; sum.textContent = "";
+    if (r.stdout) r.stdout.split("\n").forEach(function (l, i, a) { if (l !== "" || i < a.length - 1) line(l); });
+    if (r.error) { line(r.error, "er"); sum.className = "pysum bad"; sum.textContent = "Your code has an error. Read the red message and fix it."; idle("Finished with an error"); tries++; if (tries >= 1) unlockSolution(); return; }
+    var ok = 0, hn = 0;
+    r.results.forEach(function (x, i) {
+      var li = document.createElement("li"); li.className = x.ok ? "ok" : "no";
+      var hidden = TESTS[i].hidden;
+      li.textContent = (x.ok ? "✓ " : "✗ ") + (hidden ? "Hidden test " + (++hn) : LABELS[i] + (!x.ok ? "   (you got " + x.got + ")" : ""));
+      if (!hidden || true) tl.appendChild(li);
+      if (x.ok) ok++;
+    });
+    tries++;
+    if (ok === r.results.length) { solved = true; sum.className = "pysum good"; sum.textContent = "🎉 Solved! All " + ok + " tests pass."; save(); }
+    else { sum.className = "pysum bad"; sum.textContent = ok + " of " + r.results.length + " tests pass. Look at the ✗ lines, then try a hint if you need one."; }
+    unlockSolution(); idle("Checked");
+  }
+  function make() {
+    var src = "(" + workerMain.toString() + ")(" + JSON.stringify(BASE) + "," + JSON.stringify(HARNESS) + ")";
+    w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = function (e) {
+      var d = e.data;
+      if (d.t === "out") line(d.m); else if (d.t === "err") line(d.m, "er");
+      else if (d.t === "status") {
+        st.textContent = d.m;
+        if (d.m === "Running…") { clearTimeout(timer); timer = setTimeout(function () { kill("Stopped: it ran longer than 10 seconds. Is there an endless loop?"); line("⏹ Stopped after 10 seconds", "er"); }, 10000); }
+      } else if (d.t === "result") showResult(d.m);
+      else if (d.t === "done") idle("Finished ✓");
+      else if (d.t === "error") { var m = d.m, k = m.indexOf('File "<exec>"'); line(k >= 0 ? m.slice(k) : m, "er"); idle("Finished with an error"); }
+    };
+    w.onerror = function () { line("Could not load Python. Check your internet connection and try again.", "er"); kill("Failed to load"); };
+  }
+  function go(k) {
+    out.innerHTML = ""; tl.innerHTML = ""; sum.textContent = ""; sum.className = "pysum";
+    run.disabled = chk.disabled = true; stop.style.display = "inline-block"; st.textContent = "Starting…";
+    try { if (!w) make(); w.postMessage({ k: k, code: ta.value, tests: JSON.stringify(TESTS) }); } catch (e) { line("This browser cannot run the Python box.", "er"); idle("Not supported"); }
+  }
+  run.onclick = function () { go("run"); };
+  chk.onclick = function () { go("check"); };
+  stop.onclick = function () { kill("Stopped"); };
+  rst.onclick = function () { ta.value = start; out.innerHTML = ""; tl.innerHTML = ""; sum.textContent = ""; st.textContent = ""; };
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { e.preventDefault(); var s = ta.selectionStart; ta.value = ta.value.slice(0, s) + "    " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 4; }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (!chk.disabled) go("check"); }
+  });
+  /* hints + solution */
+  var hb = document.querySelectorAll(".hintbtn");
+  Array.prototype.forEach.call(hb, function (b, i) {
+    b.onclick = function () { $("hint" + i).hidden = false; b.disabled = true; if (hb[i + 1]) hb[i + 1].disabled = false; };
+  });
+  var sb = $("solBtn");
+  if (sb) sb.onclick = function () { $("solBox").hidden = false; sb.disabled = true; };
+  try { if (JSON.parse(localStorage.getItem("a1_solved") || "[]").indexOf(ID) > -1) { var s0 = $("doneTag"); if (s0) s0.hidden = false; unlockSolution(); } } catch (e) {}
+})();
+
+  </script>
+</body>
+</html>
