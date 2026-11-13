@@ -83,10 +83,13 @@
 .pystatus{font-size:.8rem;opacity:.75;margin:8px 0 6px;min-height:1.2em}#pyOut{min-height:48px}#pyOut:empty::before{content:'Output appears here';opacity:.4}
 @media(max-width:560px){.codebox,.console{font-size:.76rem}.cl{padding:2px 8px;gap:6px}.pm{font-size:.74rem}}
 
-.lvl{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.72rem;font-weight:800;margin-right:8px;background:rgba(46,158,107,.3);color:#14213D}
-.lvl.Medium{background:rgba(233,196,106,.5)}.lvl.Hard{background:rgba(255,107,91,.4)}
+.lvl{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.74rem;font-weight:800;margin-right:8px;background:#BFE8D2;color:#14213D}
+.lvl.Medium{background:#F3DFA2}.lvl.Hard{background:#FFC3B8}
 .panel code{background:rgba(20,33,61,.12);padding:1px 6px;border-radius:6px;font-size:.9em}
 .panel ul{margin:6px 0 6px 20px}
+.explain{background:rgba(233,196,106,.18);border-radius:12px;padding:10px 14px;margin:8px 0;font-size:.92rem;line-height:1.6}
+pre.ex{background:rgba(20,33,61,.16);padding:10px 14px;border-radius:10px;font-size:.88rem;overflow-x:auto;margin:6px 0}
+.console .er2{color:#FFB3A8;opacity:.9;font-family:inherit;padding-left:4px}.console .tip{color:#E9C46A;margin-top:4px}
 .pysum{margin:10px 0 6px;font-weight:700;min-height:1.2em}.pysum.good{color:#7EE0A8;font-size:1.05rem}.pysum.bad{color:#FF9A8B}
 .tests{list-style:none;padding:0;margin:8px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem}
 .tests li{padding:6px 10px;border-radius:8px;margin-bottom:4px;overflow-wrap:anywhere}
@@ -96,6 +99,7 @@
 .solbox pre{background:#101B33;color:#E8EDF7;padding:12px 14px;border-radius:12px;overflow-x:auto;font-size:.85rem}
 .done{color:#1F7A52;font-weight:800;margin-left:8px}
 button:disabled{opacity:.45;cursor:not-allowed}
+.hintbtn{background:rgba(244,237,224,.92)!important;color:#14213D!important}.hintbtn:disabled{opacity:.4}
 </style>
 </head>
 <body>
@@ -108,19 +112,25 @@ button:disabled{opacity:.45;cursor:not-allowed}
   <main class="container">
     <a class="back" href="python-practice.html">← Practice assignments</a>
     <h1 class="page-title">Caesar Cipher <span class="done" id="doneTag" hidden>✓ Solved</span></h1>
-    <p class="page-sub"><span class="lvl Hard">Hard</span>Cyber task: the oldest encryption trick.</p>
+    <p class="page-sub"><span class="lvl Hard">Level 2 · Hard</span>Cyber task: the oldest encryption trick.</p>
 
     <div class="panel">
       <h2>Your task</h2>
-      <p>Write <code>caesar(text, shift)</code> that moves every <b>letter</b> forward by <code>shift</code> places in the alphabet, wrapping from z back to a. Keep upper/lower case. Leave spaces, digits and punctuation unchanged.</p><p>Examples: <code>caesar("abc", 1)</code> → <code>"bcd"</code>, <code>caesar("xyz", 3)</code> → <code>"abc"</code></p>
+      
+      <div class="explain"><b>Reminder:</b> write a function and <b>return</b> the answer. Press <b>Run</b> to see the examples.</div><p>Finish <code>caesar(text, shift)</code>. It <b>returns</b> the text with every <b>letter</b> moved forward by <code>shift</code> places in the alphabet (z wraps back to a). Keep capitals as capitals. Spaces, digits and punctuation stay unchanged.</p><pre class="ex">caesar("abc", 1) → 'bcd'
+caesar("xyz", 3) → 'abc'</pre>
       <p class="hint">Need a refresher? <a href="python-modules.html" style="color:inherit;text-decoration:underline">Open the lesson</a>.</p>
     </div>
 
     <div class="panel try">
       <h2>🐍 Write your code</h2>
-      <p class="hint">Edit the code, press <b>Run</b> to see what it prints, or <b>Check my answer</b> to test it. Ctrl+Enter also checks.</p>
-      <textarea id="pyCode" spellcheck="false" rows="8">def caesar(text, shift):
-    pass
+      <p class="hint">Press <b>Run</b> to see what your function gives back for the examples, then <b>Check my answer</b>. Ctrl+Enter also checks.</p>
+      <textarea id="pyCode" spellcheck="false" rows="10">def caesar(text, shift):
+    out = ""
+    for ch in text:
+        # shift letters, copy everything else
+        out = out + ch
+    return out
 </textarea>
       <div class="sim-controls" style="margin-top:10px">
         <button class="btn-main" id="pyCheck">✔ Check my answer</button>
@@ -132,7 +142,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <div class="console" id="pyOut" aria-live="polite"></div>
       <div class="pysum" id="pySummary"></div>
       <ul class="tests" id="pyTests"></ul>
-      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB). <code>input()</code> does not work here, so write functions that return values.</p>
+      <p class="hint" style="margin-top:8px">The first run downloads Python (about 10 MB), so wait a few seconds. <code>input()</code> does not work here.</p>
     </div>
 
     <div class="panel">
@@ -143,18 +153,18 @@ button:disabled{opacity:.45;cursor:not-allowed}
         <button class="btn-ghost hintbtn" disabled>💡 Hint 2</button>
         <button class="btn-ghost hintbtn" disabled>💡 Hint 3</button>
       </div>
-      <div class="hintbox" id="hint0" hidden>Build the answer in a loop, one character at a time. Letters get shifted, other characters are copied as they are (<code>ch.isalpha()</code>).</div>
+      <div class="hintbox" id="hint0" hidden>Only letters change: <code>if ch.isalpha():</code>. Other characters are copied as they are.</div>
       <div class="hintbox" id="hint1" hidden><code>ord("a")</code> gives a letter's number and <code>chr(n)</code> turns a number back into a letter. Use <code>ord("A")</code> as the base for capitals.</div>
-      <div class="hintbox" id="hint2" hidden>Position in alphabet: <code>(ord(ch) - base + shift) % 26</code>. The <code>% 26</code> does the wrap-around. Add the base back, then use chr().</div>
+      <div class="hintbox" id="hint2" hidden>New letter: <code>chr((ord(ch) - base + shift) % 26 + base)</code>. The <code>% 26</code> does the wrap-around.</div>
       <div class="hintrow" style="margin-top:12px"><button class="btn-light" id="solBtn" disabled>Show solution (after your first Check)</button></div>
       <div class="solbox" id="solBox" hidden><pre>def caesar(text, shift):
     out = ""
     for ch in text:
         if ch.isalpha():
             base = ord("A") if ch.isupper() else ord("a")
-            out += chr((ord(ch) - base + shift) % 26 + base)
+            out = out + chr((ord(ch) - base + shift) % 26 + base)
         else:
-            out += ch
+            out = out + ch
     return out</pre><p class="hint">There are many correct answers. If yours passes the tests, it is right.</p></div>
     </div>
 
@@ -166,7 +176,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   <footer>© a1learning</footer>
 
   <script>
-window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1) → 'bcd'","caesar('xyz', 3) → 'abc'","caesar('Hello, World!', 5) → 'Mjqqt, Btwqi!'","caesar('Cyber', 0) → 'Cyber'","caesar('ABC', 26) → 'ABC'"];window.ASG_TESTS=[{"call":"caesar('abc', 1)","exp":"bcd","hidden":false},{"call":"caesar('xyz', 3)","exp":"abc","hidden":false},{"call":"caesar('Hello, World!', 5)","exp":"Mjqqt, Btwqi!","hidden":false},{"call":"caesar('Cyber', 0)","exp":"Cyber","hidden":true},{"call":"caesar('ABC', 26)","exp":"ABC","hidden":true}];window.ASG_HARNESS="import json, io, traceback, contextlib\n\ndef __a1check(code, tests_json):\n    tests = json.loads(tests_json)\n    g = {\"__name__\": \"__main__\"}\n    buf = io.StringIO()\n    out = {\"stdout\": \"\", \"error\": None, \"results\": []}\n    try:\n        with contextlib.redirect_stdout(buf):\n            exec(compile(code, \"<exec>\", \"exec\"), g)\n    except BaseException as e:\n        line = None\n        for fr in traceback.extract_tb(e.__traceback__):\n            if fr.filename == \"<exec>\":\n                line = fr.lineno\n        if isinstance(e, SyntaxError):\n            line = e.lineno\n        msg = e.msg if isinstance(e, SyntaxError) else str(e)\n        out[\"error\"] = ((\"Line %s: \" % line) if line else \"\") + type(e).__name__ + \": \" + msg\n        out[\"stdout\"] = buf.getvalue()\n        return json.dumps(out)\n    out[\"stdout\"] = buf.getvalue()\n    for t in tests:\n        r = {\"ok\": False, \"got\": \"\"}\n        try:\n            b2 = io.StringIO()\n            with contextlib.redirect_stdout(b2):\n                got = eval(t[\"call\"], g)\n            exp = t[\"exp\"]\n            num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)\n            r[\"ok\"] = got == exp and (type(got) == type(exp) or (num(got) and num(exp)))\n            r[\"got\"] = repr(got)\n        except BaseException as e:\n            r[\"got\"] = type(e).__name__ + \": \" + str(e)\n        out[\"results\"].append(r)\n    return json.dumps(out)\n";
+window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1)  →  'bcd'","caesar('xyz', 3)  →  'abc'","caesar('Hello, World!', 5)  →  'Mjqqt, Btwqi!'","caesar('Cyber', 0)  →  'Cyber'","caesar('ABC', 26)  →  'ABC'"];window.ASG_TESTS=[{"call":"caesar('abc', 1)","exp":"bcd","hidden":false},{"call":"caesar('xyz', 3)","exp":"abc","hidden":false},{"call":"caesar('Hello, World!', 5)","exp":"Mjqqt, Btwqi!","hidden":false},{"call":"caesar('Cyber', 0)","exp":"Cyber","hidden":true},{"call":"caesar('ABC', 26)","exp":"ABC","hidden":true}];window.ASG_HARNESS="import json, io, traceback, contextlib\n\ndef _fail(e, code):\n    line = None\n    for fr in traceback.extract_tb(e.__traceback__):\n        if fr.filename == \"<exec>\":\n            line = fr.lineno\n    msg = str(e)\n    if isinstance(e, SyntaxError):\n        line = e.lineno\n        msg = e.msg\n    src = \"\"\n    rows = code.split(\"\\n\")\n    if line and 1 <= line <= len(rows):\n        src = rows[line - 1]\n    return {\"type\": type(e).__name__, \"msg\": msg, \"line\": line, \"src\": src}\n\ndef _norm(s):\n    return \"\\n\".join(x.rstrip() for x in s.strip().split(\"\\n\"))\n\ndef __a1check(code, tests_json):\n    tests = json.loads(tests_json)\n    out = {\"stdout\": \"\", \"error\": None, \"results\": []}\n    if tests and \"call\" in tests[0]:\n        g = {\"__name__\": \"__main__\"}\n        buf = io.StringIO()\n        try:\n            with contextlib.redirect_stdout(buf):\n                exec(compile(code, \"<exec>\", \"exec\"), g)\n        except BaseException as e:\n            out[\"error\"] = _fail(e, code)\n            out[\"stdout\"] = buf.getvalue()\n            return json.dumps(out)\n        out[\"stdout\"] = buf.getvalue()\n        num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)\n        for t in tests:\n            r = {\"ok\": False, \"got\": \"\"}\n            try:\n                with contextlib.redirect_stdout(io.StringIO()):\n                    got = eval(t[\"call\"], g)\n                exp = t[\"exp\"]\n                r[\"ok\"] = got == exp and (type(got) == type(exp) or (num(got) and num(exp)))\n                r[\"got\"] = repr(got)\n            except BaseException as e:\n                r[\"got\"] = type(e).__name__ + \": \" + str(e)\n            out[\"results\"].append(r)\n        return json.dumps(out)\n    for k, t in enumerate(tests):\n        g = {\"__name__\": \"__main__\"}\n        buf = io.StringIO()\n        try:\n            exec(t[\"setup\"], g)\n            with contextlib.redirect_stdout(buf):\n                exec(compile(code, \"<exec>\", \"exec\"), g)\n        except BaseException as e:\n            out[\"error\"] = _fail(e, code)\n            out[\"stdout\"] = buf.getvalue()\n            return json.dumps(out)\n        got = buf.getvalue()\n        out[\"results\"].append({\"ok\": _norm(got) == _norm(t[\"exp\"]), \"got\": got.strip()})\n    return json.dumps(out)\n\ndef __a1run(code, tests_json):\n    tests = json.loads(tests_json)\n    g = {\"__name__\": \"__main__\"}\n    try:\n        if tests and \"setup\" in tests[0]:\n            exec(tests[0][\"setup\"], g)\n        exec(compile(code, \"<exec>\", \"exec\"), g)\n        if tests and \"call\" in tests[0]:\n            shown = 0\n            for t in tests:\n                if t.get(\"hidden\") or shown >= 3:\n                    continue\n                print(t[\"call\"], \"→\", repr(eval(t[\"call\"], g)))\n                shown += 1\n    except BaseException as e:\n        return json.dumps({\"error\": _fail(e, code)})\n    return json.dumps({\"error\": None})\n";
 /* a1learning – assignment runner: runs the student's Python in the browser and checks it against tests */
 (function () {
   var BASE = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
@@ -187,9 +197,8 @@ window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1) → 'bcd'","caesar('
           var r = py.globals.get("__a1check")(e.data.code, e.data.tests);
           postMessage({ t: "result", m: r });
         } else {
-          var g = py.globals.get("dict")();
-          try { await py.runPythonAsync(e.data.code, { globals: g }); } finally { g.destroy(); }
-          postMessage({ t: "done" });
+          var rr = py.globals.get("__a1run")(e.data.code, e.data.tests);
+          postMessage({ t: "runres", m: rr });
         }
       } catch (err) { postMessage({ t: "error", m: String(err && err.message || err) }); }
     };
@@ -199,6 +208,36 @@ window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1) → 'bcd'","caesar('
   var run = $("pyRun"), chk = $("pyCheck"), stop = $("pyStop"), rst = $("pyReset");
   var start = ta.value, w = null, timer = null, tries = 0, solved = false, mode = "run";
   var ID = window.ASG_ID, LABELS = window.ASG_LABELS, TESTS = window.ASG_TESTS, HARNESS = window.ASG_HARNESS;
+  function explain(type, msg) {
+    var m = msg || "", n;
+    if (/Error$/.test(type) && /^(Syntax|Indentation|Tab)Error$/.test(type)) {
+      if (/expected ':'/.test(m)) return "A line that starts with if / for / while / def / else needs a colon ( : ) at its very end. Add it.";
+      if (/expected an indented block/.test(m)) return "The line right after if / for / while / def / else must be pushed to the right (indented by 4 spaces).";
+      if (/unindent|unexpected indent|inconsistent/i.test(m)) return "The spaces at the start of this line do not line up with the lines around it. Lines in the same block need the same indentation.";
+      if (/never closed|unterminated|EOF|unmatched/i.test(m)) return "Something was opened but not closed: a bracket ( [ { or a quote \" ' . Check that every opening one has a closing one.";
+      if (/cannot assign|expression/.test(m) || /=/.test(m)) return "Use = to store a value (x = 5) and == to compare two values (x == 5).";
+      return "Python cannot read this line. Check for typos, a missing quote or bracket, or a missing colon on this line or the one before.";
+    }
+    if (type === "NameError") { n = (m.match(/'(.+?)'/) || [])[1]; return "Python does not know the name '" + n + "'. Check the spelling (capital letters matter!), make sure you created it before using it, and if it is meant to be text, put it in quotes."; }
+    if (type === "TypeError") {
+      if (/concatenate|can only/.test(m)) return "You are joining text and a number with +. Turn the number into text with str(...), or use an f-string like f\"score: {score}\".";
+      if (/NoneType/.test(m)) return "Something is None (nothing). A function that never returns gives None. Did you use print instead of return?";
+      if (/not callable/.test(m)) return "You put ( ) after something that is not a function. Check the name.";
+      if (/argument/.test(m)) return "The function got the wrong number of inputs. Compare the call with the def line.";
+      return "You used a value of the wrong kind for that operation (for example, adding text to a number).";
+    }
+    if (type === "IndexError") return "You asked for a position that does not exist. Positions start at 0, so the last one is length minus 1.";
+    if (type === "KeyError") return "That key is not in the dictionary. Check the spelling, or use .get(key, 0) to be safe.";
+    if (type === "ValueError") return "The value has the right type but is not acceptable here (for example int(\"abc\")).";
+    if (type === "ZeroDivisionError") return "You divided by zero. Check what you divide by.";
+    if (type === "AttributeError") return "That thing does not have that method. Check the spelling and capitals, like .lower() not .Lower().";
+    return "Read the red message above: it tells you what Python did not like and on which line.";
+  }
+  function showError(er) {
+    line("❌ " + (er.line ? "Line " + er.line + ": " : "") + er.type + ": " + er.msg, "er");
+    if (er.src) line("    " + er.src.trim(), "er2");
+    line("💡 " + explain(er.type, er.msg), "tip");
+  }
   function line(t, c) { var d = document.createElement("div"); if (c) d.className = c; d.textContent = t; out.appendChild(d); }
   function idle(msg) { clearTimeout(timer); run.disabled = chk.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
   function kill(msg) { if (w) { w.terminate(); w = null; } idle(msg); }
@@ -207,12 +246,17 @@ window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1) → 'bcd'","caesar('
   function showResult(raw) {
     var r = JSON.parse(raw); tl.innerHTML = ""; sum.className = "pysum"; sum.textContent = "";
     if (r.stdout) r.stdout.split("\n").forEach(function (l, i, a) { if (l !== "" || i < a.length - 1) line(l); });
-    if (r.error) { line(r.error, "er"); sum.className = "pysum bad"; sum.textContent = "Your code has an error. Read the red message and fix it."; idle("Finished with an error"); tries++; if (tries >= 1) unlockSolution(); return; }
+    if (r.error) { showError(r.error); sum.className = "pysum bad"; sum.textContent = "Your code has a mistake. Read the 💡 tip in the output box, fix it and check again."; idle("Finished with an error"); tries++; unlockSolution(); return; }
     var ok = 0, hn = 0;
     r.results.forEach(function (x, i) {
       var li = document.createElement("li"); li.className = x.ok ? "ok" : "no";
       var hidden = TESTS[i].hidden;
-      li.textContent = (x.ok ? "✓ " : "✗ ") + (hidden ? "Hidden test " + (++hn) : LABELS[i] + (!x.ok ? "   (you got " + x.got + ")" : ""));
+      var extra = "";
+      if (!x.ok && !hidden) {
+        if (TESTS[i].setup !== undefined) extra = "\n   you printed: " + (x.got === "" ? "nothing (did you forget print?)" : x.got.split("\n").join(" / "));
+        else extra = "\n   your function gave back: " + x.got + (x.got === "None" ? "  ← use return, not print" : "");
+      }
+      li.textContent = (x.ok ? "✓ " : "✗ ") + (hidden ? "Hidden test " + (++hn) : LABELS[i] + extra);
       if (!hidden || true) tl.appendChild(li);
       if (x.ok) ok++;
     });
@@ -231,6 +275,7 @@ window.ASG_ID="caesar";window.ASG_LABELS=["caesar('abc', 1) → 'bcd'","caesar('
         st.textContent = d.m;
         if (d.m === "Running…") { clearTimeout(timer); timer = setTimeout(function () { kill("Stopped: it ran longer than 10 seconds. Is there an endless loop?"); line("⏹ Stopped after 10 seconds", "er"); }, 10000); }
       } else if (d.t === "result") showResult(d.m);
+      else if (d.t === "runres") { var rr = JSON.parse(d.m); if (rr.error) { showError(rr.error); idle("Finished with an error"); } else { if (!out.children.length) line("(your code ran, but printed nothing. Use print(...) to show something.)", "d"); idle("Finished ✓"); } }
       else if (d.t === "done") idle("Finished ✓");
       else if (d.t === "error") { var m = d.m, k = m.indexOf('File "<exec>"'); line(k >= 0 ? m.slice(k) : m, "er"); idle("Finished with an error"); }
     };
