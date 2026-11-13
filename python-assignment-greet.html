@@ -118,7 +118,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <h2>Your task</h2>
       <div class="explain"><b>Given:</b> name &nbsp;(for example <code>name = "Asha"</code>)<br>It already exists, so don't type it. Just use it, and <code>print</code> your answer. We run your code with different values to check it.</div>
       <p>Print the text <code>Hello, NAME!</code> using the given <code>name</code>.</p><p>If <code>name</code> is <code>"Asha"</code>, your code prints:</p><pre class="ex">Hello, Asha!</pre>
-      <p class="hint">Need a refresher? <a href="python-fstrings.html" style="color:inherit;text-decoration:underline">Open the lesson</a>.</p>
+      <p class="hint">Need a refresher? <a href="python-variables.html" style="color:inherit;text-decoration:underline">Open the lesson</a>.</p>
     </div>
 
     <div class="panel try">
@@ -149,10 +149,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
         <button class="btn-ghost hintbtn" disabled>💡 Hint 3</button>
       </div>
       <div class="hintbox" id="hint0" hidden><code>print(...)</code> shows text on the screen.</div>
-      <div class="hintbox" id="hint1" hidden>Put the name inside the text with an f-string: <code>print(f"Hello, {name}!")</code> (the <code>f</code> before the quote lets you use <code>{ }</code>).</div>
+      <div class="hintbox" id="hint1" hidden>Text can be joined with <code>+</code>. For example <code>"Hi " + "Sam"</code> gives <code>Hi Sam</code>. Join three pieces: the text <code>"Hello, "</code>, then <code>name</code> (no quotes, it is a variable), then the text <code>"!"</code>.</div>
       <div class="hintbox" id="hint2" hidden>Match the text exactly: capital H, a comma, a space, and the exclamation mark.</div>
       <div class="hintrow" style="margin-top:12px"><button class="btn-light" id="solBtn" disabled>Show solution (after your first Check)</button></div>
-      <div class="solbox" id="solBox" hidden><pre>print(f"Hello, {name}!")</pre><p class="hint">There are many correct answers. If yours passes the tests, it is right.</p></div>
+      <div class="solbox" id="solBox" hidden><pre>print("Hello, " + name + "!")</pre><p class="hint">There are many correct answers. If yours passes the tests, it is right.</p></div>
     </div>
 
     <div class="panel">
@@ -195,9 +195,11 @@ window.ASG_ID="greet";window.ASG_LABELS=["name = 'Asha'  →  prints: Hello, Ash
   var run = $("pyRun"), chk = $("pyCheck"), stop = $("pyStop"), rst = $("pyReset");
   var start = ta.value, w = null, timer = null, tries = 0, solved = false, mode = "run";
   var ID = window.ASG_ID, LABELS = window.ASG_LABELS, TESTS = window.ASG_TESTS, HARNESS = window.ASG_HARNESS;
-  function explain(type, msg) {
+  function explain(type, msg, src) {
     var m = msg || "", n;
     if (/Error$/.test(type) && /^(Syntax|Indentation|Tab)Error$/.test(type)) {
+      var bare = (src || "").replace(/"[^"]*"|'[^']*'/g, "");
+      if (/!/.test(bare.replace(/!=/g, ""))) return "There is a stray ! outside the quotes. Text like Hello! must stay INSIDE the quotes: print(\"Hello, \" + name + \"!\"). Also, print(\"Hello\", name) puts a space, not a comma.";
       if (/expected ':'/.test(m)) return "A line that starts with if / for / while / def / else needs a colon ( : ) at its very end. Add it.";
       if (/expected an indented block/.test(m)) return "The line right after if / for / while / def / else must be pushed to the right (indented by 4 spaces).";
       if (/unindent|unexpected indent|inconsistent/i.test(m)) return "The spaces at the start of this line do not line up with the lines around it. Lines in the same block need the same indentation.";
@@ -207,7 +209,7 @@ window.ASG_ID="greet";window.ASG_LABELS=["name = 'Asha'  →  prints: Hello, Ash
     }
     if (type === "NameError") { n = (m.match(/'(.+?)'/) || [])[1]; return "Python does not know the name '" + n + "'. Check the spelling (capital letters matter!), make sure you created it before using it, and if it is meant to be text, put it in quotes."; }
     if (type === "TypeError") {
-      if (/concatenate|can only/.test(m)) return "You are joining text and a number with +. Turn the number into text with str(...), or use an f-string like f\"score: {score}\".";
+      if (/concatenate|can only/.test(m)) return "You are joining text and a number with +. Turn the number into text with str(...), for example \"score: \" + str(score).";
       if (/NoneType/.test(m)) return "Something is None (nothing). A function that never returns gives None. Did you use print instead of return?";
       if (/not callable/.test(m)) return "You put ( ) after something that is not a function. Check the name.";
       if (/argument/.test(m)) return "The function got the wrong number of inputs. Compare the call with the def line.";
@@ -223,7 +225,7 @@ window.ASG_ID="greet";window.ASG_LABELS=["name = 'Asha'  →  prints: Hello, Ash
   function showError(er) {
     line("❌ " + (er.line ? "Line " + er.line + ": " : "") + er.type + ": " + er.msg, "er");
     if (er.src) line("    " + er.src.trim(), "er2");
-    line("💡 " + explain(er.type, er.msg), "tip");
+    line("💡 " + explain(er.type, er.msg, er.src), "tip");
   }
   function line(t, c) { var d = document.createElement("div"); if (c) d.className = c; d.textContent = t; out.appendChild(d); }
   function idle(msg) { clearTimeout(timer); run.disabled = chk.disabled = false; stop.style.display = "none"; st.textContent = msg || ""; }
