@@ -15,7 +15,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:
 .side{position:absolute;right:12px;bottom:30px;z-index:4;display:flex;flex-direction:column;gap:14px;align-items:center}
 .side a,.side button{width:52px;height:52px;border-radius:50%;border:0;background:rgba(20,20,28,.72);color:#fff;font-size:1.35rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;backdrop-filter:blur(8px)}
 .side small{font-size:.58rem;font-weight:700;margin-top:-2px}
-.prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18);z-index:5}.prog i{display:block;height:100%;width:0;background:#3FC1D9}
+.prog{position:absolute;left:0;right:0;bottom:0;height:28px;z-index:6;touch-action:none;cursor:pointer}.prog:before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.22);transition:height .15s}.prog i{position:absolute;left:0;bottom:0;height:3px;width:0;background:#3FC1D9;transition:height .15s}.prog b{position:absolute;bottom:-3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#fff;left:0;opacity:0;transition:opacity .15s}.prog.on:before,.prog.on i{height:7px}.prog.on b{opacity:1;bottom:-3px}.prog em{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font:700 .8rem Inter,sans-serif;font-style:normal;background:rgba(0,0,0,.6);padding:3px 9px;border-radius:8px;opacity:0;transition:opacity .15s}.prog.on em{opacity:1}
 #top{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:20;padding:12px 14px;display:flex;justify-content:space-between;pointer-events:none}
 #top a,#top button{pointer-events:auto;font:inherit;color:#fff;background:rgba(20,20,28,.72);border:0;border-radius:99px;padding:7px 14px;font-size:.85rem;font-weight:700;text-decoration:none;cursor:pointer;backdrop-filter:blur(8px)}
 .pp{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:0;pointer-events:none;transition:opacity .25s}.pp.on{opacity:.85}
@@ -29,7 +29,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:
 <div class="shade"></div><div class="pp">⏸</div>
 <div class="meta"><span class="tag">Networking</span><h2>TCP Three-Way Handshake</h2><p>How your browser says hello to a server: SYN, SYN-ACK, ACK.</p></div>
 <div class="side"><a href="tcp-handshake.html">🧪<small>Try it</small></a></div>
-<div class="prog"><i></i></div></section>
+<div class="prog"><i></i><b></b><em></em></div></section>
 <div class="empty"><div><div style="font-size:3rem">🎬</div><h3>More videos coming soon</h3><p>New topics are added all the time.</p></div></div>
 </div>
 <script>
@@ -41,8 +41,17 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:
     if(e.isIntersecting&&e.intersectionRatio>=0.6){cur=s;v.muted=muted;v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){v.muted=true;v.play().catch(function(){})})}
     else{v.pause()}})},{root:feed,threshold:[0.6]});
   vs.forEach(function(s){io.observe(s);var v=s.querySelector('video'),pp=s.querySelector('.pp'),bar=s.querySelector('.prog i');
-    v.addEventListener('timeupdate',function(){if(v.duration)bar.style.width=(v.currentTime/v.duration*100)+'%'});
-    s.addEventListener('click',function(e){if(e.target.closest('.side'))return;
+    var pr=s.querySelector('.prog'),kb=pr.querySelector('b'),tl=pr.querySelector('em'),drag=false,was=false;
+    function fmt(t){t=Math.floor(t);return Math.floor(t/60)+':'+('0'+t%60).slice(-2)}
+    function show(f){bar.style.width=f*100+'%';kb.style.left=f*100+'%';tl.textContent=fmt(f*(v.duration||0))+' / '+fmt(v.duration||0)}
+    v.addEventListener('timeupdate',function(){if(v.duration&&!drag)show(v.currentTime/v.duration)});
+    function seek(e){var r=pr.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));if(v.duration){v.currentTime=f*v.duration;show(f)}}
+    pr.addEventListener('pointerdown',function(e){e.stopPropagation();drag=true;was=!v.paused;v.pause();pr.classList.add('on');pr.setPointerCapture(e.pointerId);seek(e)});
+    pr.addEventListener('pointermove',function(e){if(drag)seek(e)});
+    function end(e){if(!drag)return;drag=false;pr.classList.remove('on');if(was)v.play().catch(function(){})}
+    pr.addEventListener('pointerup',end);pr.addEventListener('pointercancel',end);
+    pr.addEventListener('click',function(e){e.stopPropagation()});
+    s.addEventListener('click',function(e){if(e.target.closest('.side')||e.target.closest('.prog'))return;
       if(v.paused){v.play();pp.textContent='▶'}else{v.pause();pp.textContent='⏸'}pp.classList.add('on');setTimeout(function(){pp.classList.remove('on')},500);
       if(muted&&!v.paused){setMute(false)}})});
   var h=document.createElement('div');h.className='hint';h.textContent='Tap the video for sound · swipe up for more';document.querySelector('.v').appendChild(h);setTimeout(function(){h.remove()},5000);
