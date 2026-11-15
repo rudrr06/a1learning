@@ -20,17 +20,25 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:
 #top a,#top button{pointer-events:auto;font:inherit;color:#fff;background:rgba(20,20,28,.72);border:0;border-radius:99px;padding:7px 14px;font-size:.85rem;font-weight:700;text-decoration:none;cursor:pointer;backdrop-filter:blur(8px)}
 .pp{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:0;pointer-events:none;transition:opacity .25s}.pp.on{opacity:.85}
 .hint{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(0,0,0,.65);padding:7px 16px;border-radius:99px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.pick{position:fixed;inset:0;z-index:30;background:#050507;overflow-y:auto}.pick .in{max-width:480px;margin:0 auto;padding:64px 18px 30px}
+.pick h1{margin:0 0 6px;font-size:1.6rem}.pick p.s{margin:0 0 22px;color:#9aa0b4;font-size:.95rem}
+.sj{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:#fff;background:#12121a;border:1px solid #23232f;border-left:5px solid var(--c);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer}
+.sj:active{transform:scale(.98)}.sj .ic{font-size:2rem}.sj b{display:block;font-size:1.1rem}.sj small{color:#9aa0b4;font-size:.8rem}.sj .n{margin-left:auto;font-size:.72rem;font-weight:800;color:var(--c);white-space:nowrap}
+.hide{display:none!important}
 .empty{height:100dvh;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:#9aa0b4;scroll-snap-align:start}
 </style></head><body>
-<div id="top"><a href="index.html">✕ Close</a><button id="mute">🔇 Sound off</button></div>
-<div id="feed">
-<section class="v" data-i="0">
+<div class="pick" id="pick"><div class="in"><h1>🎬 Reels</h1><p class="s">Pick a subject. Short narrated videos, swipe to learn.</p>
+<button class="sj" data-s="networking" style="--c:#3FC1D9"><span class="ic">🌐</span><span><b>Networking</b><small>How data travels: TCP, DNS, HTTP, routing</small></span><span class="n">1 video</span></button><button class="sj" data-s="cybersecurity" style="--c:#ff6b6b"><span class="ic">🛡️</span><span><b>Cybersecurity</b><small>Attacks, defences and how they work</small></span><span class="n">SOON</span></button><button class="sj" data-s="linux" style="--c:#ffd166"><span class="ic">🐧</span><span><b>Linux</b><small>Commands, files and permissions</small></span><span class="n">SOON</span></button><button class="sj" data-s="python" style="--c:#7ee787"><span class="ic">🐍</span><span><b>Python</b><small>Code concepts, step by step</small></span><span class="n">SOON</span></button>
+<p style="text-align:center;margin-top:20px"><a href="index.html" style="color:#9aa0b4">← Back to site</a></p></div></div>
+<div id="top"><a href="index.html" id="back">✕ Close</a><button id="mute">🔇 Sound off</button></div>
+<div id="feed" class="hide">
+<section class="v hide" data-i="0" data-sub="networking">
 <video src="videos/tcp-handshake.mp4" poster="videos/tcp-handshake.jpg" playsinline loop muted preload="auto"></video>
 <div class="shade"></div><div class="pp">⏸</div>
 <div class="meta"><span class="tag">Networking</span><h2>TCP Three-Way Handshake</h2><p>How your browser says hello to a server: SYN, SYN-ACK, ACK.</p></div>
 <div class="side"><a href="tcp-handshake.html">🧪<small>Try it</small></a></div>
 <div class="prog"><i></i><b></b><em></em></div></section>
-<div class="empty"><div><div style="font-size:3rem">🎬</div><h3>More videos coming soon</h3><p>New topics are added all the time.</p></div></div>
+<div class="empty"><div><div style="font-size:3rem">🎬</div><h3 id="et">More videos coming soon</h3><p>New topics are added all the time.</p></div></div>
 </div>
 <script>
 (function(){
@@ -54,6 +62,23 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:
     s.addEventListener('click',function(e){if(e.target.closest('.side')||e.target.closest('.prog'))return;
       if(v.paused){v.play();pp.textContent='▶'}else{v.pause();pp.textContent='⏸'}pp.classList.add('on');setTimeout(function(){pp.classList.remove('on')},500);
       if(muted&&!v.paused){setMute(false)}})});
-  var h=document.createElement('div');h.className='hint';h.textContent='Tap the video for sound · swipe up for more';document.querySelector('.v').appendChild(h);setTimeout(function(){h.remove()},5000);
+  var pick=document.getElementById('pick'),back=document.getElementById('back'),et=document.getElementById('et');
+  function open(sub){
+    var n=0;vs.forEach(function(s){var ok=s.dataset.sub===sub;s.classList.toggle('hide',!ok);if(ok)n++;});
+    et.textContent=n?'More videos coming soon':'Videos for this subject are coming soon';
+    pick.classList.add('hide');feed.classList.remove('hide');feed.scrollTop=0;
+    back.textContent='← Subjects';back.href='#';back.onclick=function(e){e.preventDefault();close()};
+    try{history.replaceState(null,'','#'+sub)}catch(e){}
+    var first=vs.filter(function(s){return s.dataset.sub===sub})[0];
+    if(first){var h=document.createElement('div');h.className='hint';h.textContent='Tap the video for sound · swipe up for more';first.appendChild(h);setTimeout(function(){h.remove()},5000);}
+  }
+  function close(){
+    vs.forEach(function(s){var v=s.querySelector('video');v.pause()});cur=null;
+    feed.classList.add('hide');pick.classList.remove('hide');
+    back.textContent='✕ Close';back.href='index.html';back.onclick=null;
+    try{history.replaceState(null,'','reels.html')}catch(e){}
+  }
+  [].forEach.call(document.querySelectorAll('.sj'),function(b){b.onclick=function(){open(b.dataset.s)}});
+  var hs=location.hash.slice(1);if(hs&&document.querySelector('.sj[data-s="'+hs+'"]'))open(hs);
 })();
 </script></body></html>
